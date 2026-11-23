@@ -22,7 +22,8 @@
   const L = W.LAYOUT;
 
   // ---------------- Ajustes de jogabilidade ----------------
-  const TURNS_TO_MIX = 2.5;               // voltas no pote para misturar 100%
+  const MIX_DISTANCE = 11;                // quanto o pincel precisa "andar" no pote para misturar 100%
+                                          // (≈ 2 voltas, ou o mesmo tanto de rabiscos)
   const CONTACT_Y = W.PALETTE_TOP + 0.22; // altura em que a ponta "encosta" nas tintas
   const LIFT_HEIGHT = 0.75;               // pincel levantado (sem tocar)
   const PICK_RADIUS = 1.0;                // raio para pegar tinta de uma poça
@@ -33,11 +34,11 @@
   const AUTO_MIX_SECONDS = 2.2;           // modo fácil: tempo da mistura automática
   const AUTO_SPIN = 7;                    // velocidade do giro automático (rad/s)
 
-  // Modo fácil (para crianças com pouca coordenação): basta encostar o
+  // Mistura automática (opcional, no menu de pausa): basta encostar o
   // pincel no pote e a tinta se mistura sozinha. Fica salvo no aparelho.
-  const settings = { easyMix: true };
+  const settings = { easyMix: false };
   try {
-    const saved = localStorage.getItem('mistura.easyMix');
+    const saved = localStorage.getItem('mistura.autoMix');
     if (saved !== null) settings.easyMix = saved === '1';
   } catch (_) { /* sem armazenamento: usa o padrão */ }
 
@@ -357,6 +358,7 @@
 
     if (!stirring) {
       state.lastAngle = null;
+      state.lastStir = null;
       if (state.autoMixing) state.spin = damp(state.spin, AUTO_SPIN, 3, dt); // gira sozinha
       else state.spin *= Math.exp(-2.2 * dt); // a tinta continua girando um pouquinho
     } else if (state.autoMixing && Math.abs(state.spin) < AUTO_SPIN * 0.5) {
@@ -422,24 +424,38 @@
     if (wasEmpty) showToast(`Agora pegue outra cor!`, 'good', 2.2);
   }
 
-  /** Detecta o movimento circular: soma a variação de ângulo em volta do centro. */
+  /**
+   * Mexer a tinta: QUALQUER movimento dentro do pote conta (círculos,
+   * rabiscos, vai-e-volta). O progresso é a distância percorrida pela
+   * ponta do pincel dentro do pote, dividida por MIX_DISTANCE.
+   * O ângulo em volta do centro só serve para decidir para que lado a
+   * tinta gira na animação.
+   */
   function stir(dx, dz, r, dt) {
-    const a = Math.atan2(dz, dx);
-    if (state.lastAngle !== null && r > MIN_STIR_RADIUS) {
-      const d = wrapAngle(a - state.lastAngle);
-      if (Math.abs(d) < 1.5) { // ignora saltos bruscos
-        const target = THREE.MathUtils.clamp(d / Math.max(dt, 1e-3), -14, 14);
-        state.spin += (target - state.spin) * 0.3;
-        if (state.mixed < 1 && Math.abs(d) > 0.002) {
-          // Girar sempre no mesmo sentido mistura mais rápido que vai-e-volta
-          const sign = Math.sign(d);
-          const steady = state.dirSign === 0 || sign === state.dirSign ? 1 : 0.4;
-          state.dirSign = sign;
-          state.mixed = Math.min(1, state.mixed + (Math.abs(d) * steady) / (Math.PI * 2 * TURNS_TO_MIX));
-        }
-      }
+    // 1) Quanto a ponta andou desde o último quadro (ignora saltos bruscos)
+    let move = 0;
+    if (state.lastStir) {
+      move = Math.hypot(dx - state.lastStir.x, dz - state.lastStir.z);
+      if (move > 1.0) move = 0;
     }
+    if (state.mixed < 1) state.mixed = Math.min(1, state.mixed + move / MIX_DISTANCE);
+
+    // 2) Sentido do giro da tinta (segue o pincel quando ele circula)
+    const a = Math.atan2(dz, dx);
+    let dAng = 0;
+    if (state.lastAngle !== null && r > MIN_STIR_RADIUS) {
+      dAng = wrapAngle(a - state.lastAngle);
+      if (Math.abs(dAng) > 1.5) dAng = 0;
+    }
+    if (Math.abs(dAng) > 0.002) state.dirSign = Math.sign(dAng);
+
+    // 3) Velocidade do giro: proporcional ao quanto a criança mexe
+    const speed = Math.max(Math.abs(dAng), move * 0.9) / Math.max(dt, 1e-3);
+    const target = THREE.MathUtils.clamp((state.dirSign || 1) * speed, -14, 14);
+    state.spin += (target - state.spin) * 0.3;
+
     state.lastAngle = r > MIN_STIR_RADIUS ? a : null;
+    state.lastStir = { x: dx, z: dz };
   }
 
   function evaluateMix() {
@@ -713,7 +729,7 @@
     else if (state.brushLoad) text = `Leve o ${M.BASE_PAINTS[state.brushLoad].name} até o pote!`;
     else if (state.drops >= 2 && state.mixed < 1) {
       if (state.autoMixing) text = 'Misturando a tinta...';
-      else text = settings.easyMix ? 'Toque no pote para misturar!' : 'Gire o pincel no pote para misturar!';
+      else text = settings.easyMix ? 'Toque no pote para misturar!' : 'Mexa o pincel no pote para misturar!';
     }
     else if (state.drops === 1) text = 'Agora pegue outra cor!';
     else if (state.drops === 0) text = 'Pegue uma cor, leve ao pote e gire para misturar';
@@ -745,7 +761,7 @@
   btnEasy.addEventListener('click', () => {
     settings.easyMix = !settings.easyMix;
     if (!settings.easyMix) state.autoMixing = false;
-    try { localStorage.setItem('mistura.easyMix', settings.easyMix ? '1' : '0'); } catch (_) { /* ok */ }
+    try { localStorage.setItem('mistura.autoMix', settings.easyMix ? '1' : '0'); } catch (_) { /* ok */ }
     refreshEasyButton();
   });
   refreshEasyButton();
