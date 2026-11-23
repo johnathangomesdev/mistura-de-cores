@@ -1,7 +1,9 @@
 # Mistura de Cores — demo jogável (Three.js)
 
 Jogo infantil: pegue tinta com o pincel, leve ao pote e gire para misturar até chegar na cor-alvo.
-Desafios: **Roxo → Laranja → Verde → Marrom**.
+Tintas base: **vermelho, amarelo, azul e branco**.
+Desafios (10): Roxo → Laranja → Verde → Rosa → Azul-claro → Marrom → Lilás → Verde-limão (2 amarelo + 1 azul)
+→ Turquesa (1 amarelo + 2 azul) → Pêssego.
 
 ## Como executar
 

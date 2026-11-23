@@ -41,11 +41,22 @@
     return out;
   }
 
-  /** Cor resultante de uma quantidade de tintas {r, y, b} (ou null se vazio). */
+  const WHITE_RGB = [0.97, 0.97, 0.95];
+  const WHITE_STRENGTH = 0.9; // quanto o branco clareia (proporção de branco × força)
+
+  /**
+   * Cor resultante de uma quantidade de tintas {r, y, b, w} (ou null se vazio).
+   * Primeiro mistura as cores (RYB); depois o BRANCO clareia o resultado
+   * conforme a fração de branco no pote (vermelho + branco = rosa).
+   */
   function mixAmounts(units) {
+    const w = units.w || 0;
+    const total = units.r + units.y + units.b + w;
+    if (total <= 0) return null;
     const max = Math.max(units.r, units.y, units.b);
-    if (max <= 0) return null;
-    return rybToRgb(units.r / max, units.y / max, units.b / max);
+    if (max <= 0) return WHITE_RGB.slice(); // só branco
+    const color = rybToRgb(units.r / max, units.y / max, units.b / max);
+    return lerp(color, [1, 1, 1], (w / total) * WHITE_STRENGTH);
   }
 
   // ---------- utilidades de cor ----------
@@ -62,17 +73,30 @@
     r: { key: 'r', name: 'vermelho', rgb: CORNER.r },
     y: { key: 'y', name: 'amarelo', rgb: CORNER.y },
     b: { key: 'b', name: 'azul', rgb: CORNER.b },
+    w: { key: 'w', name: 'branco', rgb: WHITE_RGB },
   };
-  const KEYS = ['r', 'y', 'b'];
+  const KEYS = ['r', 'y', 'b', 'w'];
 
-  // Cada desafio tem uma "receita" (proporção ideal). A cor-alvo é calculada
-  // com a mesma função de mistura, então a meta é sempre alcançável.
+  // Cada desafio tem uma "receita" (proporção ideal, em porções de tinta).
+  // A cor-alvo é calculada com a mesma função de mistura, então a meta é
+  // sempre alcançável. Começa fácil (2 cores, 1 + 1) e vai ficando mais
+  // difícil (3 cores, ou proporção 2 + 1).
   const TARGETS = [
-    { name: 'ROXO',    recipe: { r: 1, y: 0, b: 1 } },
-    { name: 'LARANJA', recipe: { r: 1, y: 1, b: 0 } },
-    { name: 'VERDE',   recipe: { r: 0, y: 1, b: 1 } },
-    { name: 'MARROM',  recipe: { r: 1, y: 1, b: 1 } },
-  ].map(t => Object.assign(t, { rgb: mixAmounts(t.recipe) }));
+    { name: 'ROXO',        recipe: { r: 1, b: 1 } },
+    { name: 'LARANJA',     recipe: { r: 1, y: 1 } },
+    { name: 'VERDE',       recipe: { y: 1, b: 1 } },
+    { name: 'ROSA',        recipe: { r: 1, w: 1 } },
+    { name: 'AZUL-CLARO',  recipe: { b: 1, w: 1 } },
+    { name: 'MARROM',      recipe: { r: 1, y: 1, b: 1 } },
+    { name: 'LILÁS',       recipe: { r: 1, b: 1, w: 1 } },
+    { name: 'VERDE-LIMÃO', recipe: { y: 2, b: 1 } },
+    { name: 'TURQUESA',    recipe: { y: 1, b: 2 } },
+    { name: 'PÊSSEGO',     recipe: { r: 1, y: 1, w: 1 } },
+  ].map(t => {
+    t.recipe = Object.assign({ r: 0, y: 0, b: 0, w: 0 }, t.recipe);
+    t.rgb = mixAmounts(t.recipe);
+    return t;
+  });
 
   // Quão perto (distância RGB) a mistura precisa chegar para vencer.
   const MATCH_TOLERANCE = 0.16;
@@ -97,8 +121,8 @@
       };
     }
     // 2) Qual cor da receita está mais em falta?
-    const total = units.r + units.y + units.b;
-    const tTotal = target.recipe.r + target.recipe.y + target.recipe.b;
+    const total = KEYS.reduce((s, k) => s + units[k], 0);
+    const tTotal = KEYS.reduce((s, k) => s + target.recipe[k], 0);
     let best = null, bestGap = 0;
     for (const k of KEYS) {
       const gap = target.recipe[k] / tTotal - units[k] / total;

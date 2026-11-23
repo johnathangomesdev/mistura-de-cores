@@ -61,7 +61,7 @@
   // ---------------- Estado do jogo ----------------
   const state = {
     level: 0,
-    units: { r: 0, y: 0, b: 0 }, // porções de cada tinta no pote
+    units: { r: 0, y: 0, b: 0, w: 0 }, // porções de cada tinta no pote
     drops: 0,                    // quantas porções caíram no pote
     mixed: 1,                    // 0 = listrado, 1 = totalmente misturado
     startRGB: null,              // cor do pote antes da última porção
@@ -257,7 +257,7 @@
   // =================================================================
   // Interações: pegar tinta, despejar no pote, girar para misturar
   // =================================================================
-  function totalUnits() { return state.units.r + state.units.y + state.units.b; }
+  function totalUnits() { return state.units.r + state.units.y + state.units.b + state.units.w; }
 
   function updateInteraction(dt) {
     const touching = pointer.down && lift < 0.22 && !state.celebrating;
@@ -412,6 +412,7 @@
     clearPot();
     const t = M.TARGETS[state.level];
     ui.name.textContent = t.name;
+    ui.name.classList.toggle('long', t.name.length > 7); // nomes compridos usam fonte menor
     ui.name.style.color = M.toCss(M.shade(t.rgb, 0.82));
     ui.swatch.style.background = M.toCss(t.rgb);
     ui.count.textContent = `${state.level + 1}/${M.TARGETS.length}`;
@@ -423,7 +424,7 @@
   /** Esvazia o pote e limpa o pincel (botão ↺ também usa isto). */
   function clearPot() {
     state.lastBase = currentBaseColor();
-    state.units = { r: 0, y: 0, b: 0 };
+    state.units = { r: 0, y: 0, b: 0, w: 0 };
     state.drops = 0;
     state.mixed = 1;
     state.startRGB = state.finalRGB = null;
@@ -681,7 +682,11 @@
   }
 
   // Acesso para depuração pelo console do navegador (ex.: MixGame.state)
-  window.MixGame = { state, camera, world, update, render: () => renderer.render(scene, camera) };
+  window.MixGame = {
+    state, camera, world, update,
+    render: () => renderer.render(scene, camera),
+    goToLevel: i => { state.level = i; state.celebrating = false; startLevel(false); },
+  };
 
   window.addEventListener('resize', resize);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
