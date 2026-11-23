@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#8b3fd9">
+  <title>Mistura de Cores</title>
+  <!-- Fonte arredondada (se estiver offline, o navegador usa uma fonte padrão) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Cena 3D (Three.js desenha aqui) -->
+  <canvas id="game"></canvas>
+
+  <!-- ===== HUD superior: botões, cor-alvo e contador de desafios ===== -->
+  <div id="hud-top" class="hud">
+    <div class="side left">
+      <button id="btn-pause" class="icon-btn" aria-label="Pausar">
+        <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.6"/><rect x="14" y="5" width="4" height="14" rx="1.6"/></svg>
+      </button>
+      <button id="btn-restart" class="icon-btn" aria-label="Recomeçar a rodada">
+        <svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 4.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M4.2 4.5v5.4h5.4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div id="target-card">
+      <div id="target-name">ROXO</div>
+      <div id="target-swatch"></div>
+    </div>
+
+    <div class="side right">
+      <div id="badge"><span>DESAFIO</span><strong id="challenge-count">1/4</strong></div>
+    </div>
+  </div>
+
+  <!-- ===== HUD inferior: instrução e progresso da mistura ===== -->
+  <div id="hud-bottom" class="hud">
+    <div id="toast"></div>
+    <div id="instruction">Pegue uma cor, leve ao pote e gire para misturar</div>
+    <div id="progress-panel">
+      <div class="mini-palette"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4" id="mini-mix"></i></div>
+      <div class="progress-body">
+        <div class="ptitle">PROGRESSO DA MISTURA</div>
+        <div class="bar"><div id="progress-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="win-banner">Muito bem!</div>
+
+  <!-- ===== Telas de pausa e de fim ===== -->
+  <div id="pause-overlay" class="overlay">
+    <div class="panel">
+      <h2>Pausado</h2>
+      <button id="btn-resume" class="big-btn">Continuar</button>
+    </div>
+  </div>
+
+  <div id="end-overlay" class="overlay">
+    <div class="panel">
+      <h2>Parabéns!</h2>
+      <p>Você fez todas as cores!</p>
+      <div id="end-swatches"></div>
+      <button id="btn-replay" class="big-btn">Jogar de novo</button>
+    </div>
+  </div>
+
+  <!-- Three.js local (funciona offline). Se faltar, tenta a CDN. -->
+  <script src="js/vendor/three.min.js"></script>
+  <script>
+    window.THREE || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+  </script>
+  <!-- Código do jogo (scripts comuns, sem módulos: abre direto com duplo clique) -->
+  <script src="js/colors.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
