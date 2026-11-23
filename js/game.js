@@ -116,6 +116,58 @@
   };
 
   // =================================================================
+  // Voz: fala o nome da cor quando a criança acerta.
+  // Usa a síntese de voz do próprio navegador (Web Speech API) em pt-BR,
+  // com tom bem agudo para soar como uma criança. Sem arquivos de áudio.
+  // =================================================================
+  const Voice = {
+    voice: null,
+    unlocked: false,
+    supported: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window,
+    pickVoice() {
+      if (!this.supported) return;
+      const voices = window.speechSynthesis.getVoices();
+      const pt = voices.filter(v => /^pt[-_]?BR/i.test(v.lang));
+      const anyPt = pt.length ? pt : voices.filter(v => /^pt/i.test(v.lang));
+      // Vozes femininas ficam mais parecidas com criança quando o tom sobe
+      const female = /francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila|female|feminina|google portugu/i;
+      this.voice = anyPt.find(v => female.test(v.name)) || anyPt[0] || null;
+    },
+    /** Navegadores de celular só liberam a fala depois de um toque. */
+    unlock() {
+      if (!this.supported || this.unlocked) return;
+      this.unlocked = true;
+      this.pickVoice();
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    },
+    say(text, delay = 0) {
+      if (!this.supported) return;
+      setTimeout(() => {
+        if (state.paused) return;
+        if (!this.voice) this.pickVoice();
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'pt-BR';
+        if (this.voice) u.voice = this.voice;
+        u.pitch = 1.9;  // bem agudo = voz de criança
+        u.rate = 1.05;
+        u.volume = 1;
+        window.speechSynthesis.speak(u);
+      }, delay * 1000);
+    },
+    stop() { if (this.supported) window.speechSynthesis.cancel(); },
+  };
+  if (Voice.supported) {
+    Voice.pickVoice();
+    window.speechSynthesis.onvoiceschanged = () => Voice.pickVoice();
+  }
+
+  /** Nome da cor para falar ("AZUL-CLARO" -> "azul claro"). */
+  const spokenName = name => name.toLowerCase().replace(/-/g, ' ');
+
+  // =================================================================
   // Câmera: enquadra a paleta no espaço livre entre os HUDs
   // =================================================================
   const CAM_ELEV = THREE.MathUtils.degToRad(58);
@@ -182,6 +234,7 @@
   canvas.addEventListener('pointerdown', e => {
     if (state.paused || state.ended) return;
     Sfx.unlock();
+    Voice.unlock();
     pointer.down = true;
     pointer.active = true;
     pointer.id = e.pointerId;
@@ -393,6 +446,9 @@
     world.fx.burst(center);
     mascotAnim('jump');
     Sfx.win();
+    // A criança "fala" a cor que acabou de fazer
+    const cheers = ['Muito bem!', 'Que lindo!', 'Consegui!', 'Que legal!'];
+    Voice.say(`${spokenName(M.TARGETS[state.level].name)}! ${cheers[state.level % cheers.length]}`, 0.35);
     ui.banner.textContent = ['Muito bem!', 'Incrível!', 'Perfeito!', 'Uau!'][state.level % 4];
     ui.banner.classList.remove('show');
     void ui.banner.offsetWidth;
@@ -448,6 +504,7 @@
     ui.endSwatches.innerHTML = M.TARGETS.map(t =>
       `<div><b style="background:${M.toCss(t.rgb)}"></b>${t.name}</div>`).join('');
     ui.endOv.classList.add('show');
+    Voice.say('Parabéns! Você fez todas as cores!', 0.2);
   }
 
   function startGame() {
@@ -646,6 +703,7 @@
     if (state.ended) return;
     state.paused = p;
     pointer.down = false;
+    if (p) Voice.stop();
     ui.pauseOv.classList.toggle('show', p);
   }
   ui.btnPause.addEventListener('click', () => setPaused(true));
