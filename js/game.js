@@ -30,6 +30,16 @@
   const TOUCH_OFFSET_PX = 0;              // deslocamento da ponta em relação ao dedo (0 = exatamente onde o dedo toca)
   const WIN_DELAY = 3.0;                  // segundos de festa antes do próximo desafio
   const MAX_STREAKS = 24;
+  const AUTO_MIX_SECONDS = 2.2;           // modo fácil: tempo da mistura automática
+  const AUTO_SPIN = 7;                    // velocidade do giro automático (rad/s)
+
+  // Modo fácil (para crianças com pouca coordenação): basta encostar o
+  // pincel no pote e a tinta se mistura sozinha. Fica salvo no aparelho.
+  const settings = { easyMix: true };
+  try {
+    const saved = localStorage.getItem('mistura.easyMix');
+    if (saved !== null) settings.easyMix = saved === '1';
+  } catch (_) { /* sem armazenamento: usa o padrão */ }
 
   // ---------------- DOM ----------------
   const $ = id => document.getElementById(id);
@@ -331,11 +341,26 @@
       if (r < L.pot.inner) {
         if (state.brushLoad) transferPaint(dx, dz, r);
         if (totalUnits() > 0) { stir(dx, dz, r, dt); stirring = true; }
+        // Modo fácil: encostou no pote com tinta por misturar -> mistura sozinha
+        if (settings.easyMix && state.drops >= 2 && state.mixed < 1) state.autoMixing = true;
       }
     }
+
+    // Mistura automática: avança sozinha, mesmo se a criança tirar o dedo
+    if (state.autoMixing) {
+      if (state.mixed < 1 && !state.celebrating) {
+        state.mixed = Math.min(1, state.mixed + dt / AUTO_MIX_SECONDS);
+      } else {
+        state.autoMixing = false;
+      }
+    }
+
     if (!stirring) {
       state.lastAngle = null;
-      state.spin *= Math.exp(-2.2 * dt); // a tinta continua girando um pouquinho
+      if (state.autoMixing) state.spin = damp(state.spin, AUTO_SPIN, 3, dt); // gira sozinha
+      else state.spin *= Math.exp(-2.2 * dt); // a tinta continua girando um pouquinho
+    } else if (state.autoMixing && Math.abs(state.spin) < AUTO_SPIN * 0.5) {
+      state.spin = damp(state.spin, AUTO_SPIN, 3, dt); // dedo parado no pote: gira mesmo assim
     }
     state.swirl += state.spin * dt;
 
@@ -364,6 +389,7 @@
     const key = state.brushLoad;
     const rgb = M.BASE_PAINTS[key].rgb;
     state.brushLoad = null; // ponta limpa de novo
+    state.autoMixing = false;
 
     const prevBase = currentBaseColor();
     const wasEmpty = totalUnits() === 0;
@@ -489,6 +515,7 @@
     state.brushLoad = null;
     state.lastAngle = null;
     state.lastHint = null;
+    state.autoMixing = false;
   }
 
   function restartRound() {
@@ -684,7 +711,10 @@
     let text;
     if (state.celebrating) text = 'Uau! Cor perfeita!';
     else if (state.brushLoad) text = `Leve o ${M.BASE_PAINTS[state.brushLoad].name} até o pote!`;
-    else if (state.drops >= 2 && state.mixed < 1) text = 'Gire o pincel no pote para misturar!';
+    else if (state.drops >= 2 && state.mixed < 1) {
+      if (state.autoMixing) text = 'Misturando a tinta...';
+      else text = settings.easyMix ? 'Toque no pote para misturar!' : 'Gire o pincel no pote para misturar!';
+    }
     else if (state.drops === 1) text = 'Agora pegue outra cor!';
     else if (state.drops === 0) text = 'Pegue uma cor, leve ao pote e gire para misturar';
     else if (state.lastHint === 'wrong') text = 'Toque em ↺ para limpar o pote';
@@ -706,6 +736,20 @@
     if (p) Voice.stop();
     ui.pauseOv.classList.toggle('show', p);
   }
+  // Botão do modo fácil (fica na tela de pausa)
+  const btnEasy = document.getElementById('btn-easy');
+  function refreshEasyButton() {
+    btnEasy.textContent = `Mistura automática: ${settings.easyMix ? 'LIGADA' : 'DESLIGADA'}`;
+    btnEasy.classList.toggle('on', settings.easyMix);
+  }
+  btnEasy.addEventListener('click', () => {
+    settings.easyMix = !settings.easyMix;
+    if (!settings.easyMix) state.autoMixing = false;
+    try { localStorage.setItem('mistura.easyMix', settings.easyMix ? '1' : '0'); } catch (_) { /* ok */ }
+    refreshEasyButton();
+  });
+  refreshEasyButton();
+
   ui.btnPause.addEventListener('click', () => setPaused(true));
   ui.btnResume.addEventListener('click', () => setPaused(false));
   ui.btnRestart.addEventListener('click', restartRound);
