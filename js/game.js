@@ -27,7 +27,7 @@
   const LIFT_HEIGHT = 0.75;               // pincel levantado (sem tocar)
   const PICK_RADIUS = 1.0;                // raio para pegar tinta de uma poça
   const MIN_STIR_RADIUS = 0.3;            // perto do centro não conta como giro
-  const TOUCH_OFFSET_PX = 56;             // no celular a ponta fica acima do dedo, para ser vista
+  const TOUCH_OFFSET_PX = 0;              // deslocamento da ponta em relação ao dedo (0 = exatamente onde o dedo toca)
   const WIN_DELAY = 3.0;                  // segundos de festa antes do próximo desafio
   const MAX_STREAKS = 24;
 
