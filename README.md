@@ -2,8 +2,9 @@
 
 Jogo infantil: pegue tinta com o pincel, leve ao pote e gire para misturar até chegar na cor-alvo.
 Tintas base: **vermelho, amarelo, azul e branco**.
-Desafios (10): Roxo → Laranja → Verde → Rosa → Azul-claro → Marrom → Lilás → Verde-limão (2 amarelo + 1 azul)
-→ Turquesa (1 amarelo + 2 azul) → Pêssego.
+Desafios (20), do mais fácil ao mais difícil: Roxo → Laranja → Verde → Rosa → Azul-claro → Marrom → Lilás
+→ Verde-limão → Turquesa → Pêssego → Magenta → Anil → Creme → Verde-água → Coral → Tijolo → Mostarda
+→ Ameixa → Azul-jeans → Bege. As receitas estão na lista `TARGETS` em `js/colors.js`.
 
 ## Como executar
 

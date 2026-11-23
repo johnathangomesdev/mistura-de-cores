@@ -92,6 +92,17 @@
     { name: 'VERDE-LIMÃO', recipe: { y: 2, b: 1 } },
     { name: 'TURQUESA',    recipe: { y: 1, b: 2 } },
     { name: 'PÊSSEGO',     recipe: { r: 1, y: 1, w: 1 } },
+    // --- nível avançado: proporções 2 + 1 e misturas de 4 ou 5 porções ---
+    { name: 'MAGENTA',     recipe: { r: 2, b: 1 } },
+    { name: 'ANIL',        recipe: { r: 1, b: 2 } },
+    { name: 'CREME',       recipe: { y: 1, w: 2 } },
+    { name: 'VERDE-ÁGUA',  recipe: { y: 1, b: 1, w: 1 } },
+    { name: 'CORAL',       recipe: { r: 2, y: 1, w: 1 } },
+    { name: 'TIJOLO',      recipe: { r: 2, y: 1, b: 1 } },
+    { name: 'MOSTARDA',    recipe: { r: 1, y: 2, b: 1 } },
+    { name: 'AMEIXA',      recipe: { r: 2, y: 1, b: 2 } },
+    { name: 'AZUL-JEANS',  recipe: { r: 1, y: 1, b: 3 } },
+    { name: 'BEGE',        recipe: { r: 1, y: 1, b: 1, w: 2 } },
   ].map(t => {
     t.recipe = Object.assign({ r: 0, y: 0, b: 0, w: 0 }, t.recipe);
     t.rgb = mixAmounts(t.recipe);
