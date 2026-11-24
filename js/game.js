@@ -263,7 +263,13 @@
     if (e.pointerId !== pointer.id) return;
     pointer.down = false;
     pointer.id = null;
+    unlockPuddles();
   };
+  /** Soltou o dedo: parou de misturar, pode pegar tinta de novo. */
+  function unlockPuddles() {
+    state.stirLock = false;
+    state.lockWarned = false;
+  }
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
   canvas.addEventListener('contextmenu', e => e.preventDefault());
@@ -334,6 +340,16 @@
         if (!p.userData.active || p.userData.appear < 0.6) continue; // só as tintas desta fase
         const dx = tip.x - p.position.x, dz = tip.z - p.position.z;
         if (dx * dx + dz * dz < PICK_RADIUS * PICK_RADIUS && state.brushLoad !== p.userData.key) {
+          // TRAVA DE SEGURANÇA: depois que a criança começou a misturar,
+          // passar sem querer por uma poça NÃO pega tinta. Só depois de
+          // levantar o dedo (e a mistura automática terminar) é que libera.
+          if (state.stirLock || state.autoMixing) {
+            if (!state.lockWarned) {
+              state.lockWarned = true;
+              showToast('Misturando! Tire o dedo da tela para pegar outra cor.', 'warn', 2.4);
+            }
+            continue;
+          }
           loadBrush(p);
         }
       }
@@ -343,7 +359,12 @@
       const r = Math.hypot(dx, dz);
       if (r < L.pot.inner) {
         if (state.brushLoad) transferPaint(dx, dz, r);
-        if (totalUnits() > 0) { stir(dx, dz, r, dt); stirring = true; }
+        if (totalUnits() > 0) {
+          stir(dx, dz, r, dt);
+          stirring = true;
+          // Começou a misturar (já há 2+ porções): trava as poças até soltar o dedo
+          if (state.drops >= 2) state.stirLock = true;
+        }
         // Modo fácil: encostou no pote com tinta por misturar -> mistura sozinha
         if (settings.easyMix && state.drops >= 2 && state.mixed < 1) state.autoMixing = true;
       }
@@ -791,6 +812,7 @@
     if (state.ended) return;
     state.paused = p;
     pointer.down = false;
+    unlockPuddles();
     if (p) Voice.stop();
     ui.pauseOv.classList.toggle('show', p);
   }
