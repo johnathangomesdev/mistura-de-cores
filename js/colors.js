@@ -8,6 +8,14 @@
    em cada canto do cubo (ex.: vermelho + azul = roxo) e interpolamos
    entre os cantos. As quantidades de tinta são normalizadas pela maior
    delas, então só a PROPORÇÃO importa (2 vermelhos + 2 azuis = 1 + 1).
+
+   Depois entram as tintas extras:
+   - BRANCO clareia   (vermelho + branco = rosa)
+   - PRETO escurece   (branco + preto = cinza)
+   - VERDE é um "atalho": vale meio amarelo + meio azul.
+
+   PROGRESSÃO: a paleta começa com 3 tintas e ganha uma nova a cada fase
+   (3 -> 4 -> 5 -> 6). Veja STAGE_PAINTS e o campo "stage" dos desafios.
    ===================================================================== */
 (function (global) {
   'use strict';
@@ -41,24 +49,6 @@
     return out;
   }
 
-  const WHITE_RGB = [0.97, 0.97, 0.95];
-  const WHITE_STRENGTH = 0.9; // quanto o branco clareia (proporção de branco × força)
-
-  /**
-   * Cor resultante de uma quantidade de tintas {r, y, b, w} (ou null se vazio).
-   * Primeiro mistura as cores (RYB); depois o BRANCO clareia o resultado
-   * conforme a fração de branco no pote (vermelho + branco = rosa).
-   */
-  function mixAmounts(units) {
-    const w = units.w || 0;
-    const total = units.r + units.y + units.b + w;
-    if (total <= 0) return null;
-    const max = Math.max(units.r, units.y, units.b);
-    if (max <= 0) return WHITE_RGB.slice(); // só branco
-    const color = rybToRgb(units.r / max, units.y / max, units.b / max);
-    return lerp(color, [1, 1, 1], (w / total) * WHITE_STRENGTH);
-  }
-
   // ---------- utilidades de cor ----------
   const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
   const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -68,46 +58,103 @@
     ? `rgb(${to255(c[0])},${to255(c[1])},${to255(c[2])})`
     : `rgba(${to255(c[0])},${to255(c[1])},${to255(c[2])},${alpha})`;
 
-  // ---------- tintas base e desafios ----------
+  const WHITE_RGB = [0.97, 0.97, 0.95];
+  const BLACK_RGB = [0.1, 0.09, 0.11];
+  const WHITE_STRENGTH = 0.9; // quanto o branco clareia (fração de branco × força)
+  const BLACK_STRENGTH = 1.0; // quanto o preto escurece (fração de preto × força)
+
+  // ---------- tintas base ----------
   const BASE_PAINTS = {
     r: { key: 'r', name: 'vermelho', rgb: CORNER.r },
-    y: { key: 'y', name: 'amarelo', rgb: CORNER.y },
-    b: { key: 'b', name: 'azul', rgb: CORNER.b },
-    w: { key: 'w', name: 'branco', rgb: WHITE_RGB },
+    y: { key: 'y', name: 'amarelo',  rgb: CORNER.y },
+    b: { key: 'b', name: 'azul',     rgb: CORNER.b },
+    w: { key: 'w', name: 'branco',   rgb: WHITE_RGB },
+    k: { key: 'k', name: 'preto',    rgb: BLACK_RGB },
+    g: { key: 'g', name: 'verde',    rgb: CORNER.yb },
   };
-  const KEYS = ['r', 'y', 'b', 'w'];
+  const KEYS = ['r', 'y', 'b', 'w', 'k', 'g'];
+  const PIGMENTS = ['r', 'y', 'b', 'w', 'k']; // o verde vira amarelo + azul
 
-  // Cada desafio tem uma "receita" (proporção ideal, em porções de tinta).
-  // A cor-alvo é calculada com a mesma função de mistura, então a meta é
-  // sempre alcançável. Começa fácil (2 cores, 1 + 1) e vai ficando mais
-  // difícil (3 cores, ou proporção 2 + 1).
+  /** Quantidades vazias de todas as tintas. */
+  const emptyUnits = () => ({ r: 0, y: 0, b: 0, w: 0, k: 0, g: 0 });
+
+  /** Converte as tintas do pote em pigmentos (verde = ½ amarelo + ½ azul). */
+  function toPigments(u) {
+    const g = u.g || 0;
+    return { r: u.r || 0, y: (u.y || 0) + g / 2, b: (u.b || 0) + g / 2, w: u.w || 0, k: u.k || 0 };
+  }
+
+  /**
+   * Cor resultante das tintas no pote (ou null se vazio).
+   * 1) mistura vermelho/amarelo/azul no cubo RYB;
+   * 2) o branco clareia e 3) o preto escurece, conforme a fração de cada um.
+   */
+  function mixAmounts(units) {
+    const p = toPigments(units);
+    const total = p.r + p.y + p.b + p.w + p.k;
+    if (total <= 0) return null;
+    const max = Math.max(p.r, p.y, p.b);
+    let color;
+    if (max > 0) {
+      color = rybToRgb(p.r / max, p.y / max, p.b / max);
+      color = lerp(color, [1, 1, 1], (p.w / total) * WHITE_STRENGTH);
+    } else if (p.w > 0) {
+      color = WHITE_RGB.slice();
+    } else {
+      return BLACK_RGB.slice(); // só preto
+    }
+    return lerp(color, BLACK_RGB, Math.min(1, (p.k / total) * BLACK_STRENGTH));
+  }
+
+  // ---------- progressão: tintas disponíveis em cada fase ----------
+  const STAGE_PAINTS = [
+    ['r', 'y', 'b'],                     // fase 1: 3 cores
+    ['r', 'y', 'b', 'w'],                // fase 2: + branco
+    ['r', 'y', 'b', 'w', 'k'],           // fase 3: + preto
+    ['r', 'y', 'b', 'w', 'k', 'g'],      // fase 4: + verde
+  ];
+
+  // Cada desafio tem uma "receita" (proporção ideal, em porções de tinta)
+  // e a fase em que aparece. A cor-alvo é calculada com a mesma função de
+  // mistura, então a meta é sempre alcançável com as tintas da fase.
   const TARGETS = [
-    { name: 'ROXO',        recipe: { r: 1, b: 1 } },
-    { name: 'LARANJA',     recipe: { r: 1, y: 1 } },
-    { name: 'VERDE',       recipe: { y: 1, b: 1 } },
-    { name: 'ROSA',        recipe: { r: 1, w: 1 } },
-    { name: 'AZUL-CLARO',  recipe: { b: 1, w: 1 } },
-    { name: 'MARROM',      recipe: { r: 1, y: 1, b: 1 } },
-    { name: 'LILÁS',       recipe: { r: 1, b: 1, w: 1 } },
-    { name: 'VERDE-LIMÃO', recipe: { y: 2, b: 1 } },
-    { name: 'TURQUESA',    recipe: { y: 1, b: 2 } },
-    { name: 'PÊSSEGO',     recipe: { r: 1, y: 1, w: 1 } },
-    // --- nível avançado: proporções 2 + 1 e misturas de 4 ou 5 porções ---
-    { name: 'MAGENTA',     recipe: { r: 2, b: 1 } },
-    { name: 'ANIL',        recipe: { r: 1, b: 2 } },
-    { name: 'CREME',       recipe: { y: 1, w: 2 } },
-    { name: 'VERDE-ÁGUA',  recipe: { y: 1, b: 1, w: 1 } },
-    { name: 'CORAL',       recipe: { r: 2, y: 1, w: 1 } },
-    { name: 'TIJOLO',      recipe: { r: 2, y: 1, b: 1 } },
-    { name: 'MOSTARDA',    recipe: { r: 1, y: 2, b: 1 } },
-    { name: 'AMEIXA',      recipe: { r: 2, y: 1, b: 2 } },
-    { name: 'AZUL-JEANS',  recipe: { r: 1, y: 1, b: 3 } },
-    { name: 'BEGE',        recipe: { r: 1, y: 1, b: 1, w: 2 } },
+    // Fase 1 — vermelho, amarelo, azul
+    { stage: 0, name: 'ROXO',         recipe: { r: 1, b: 1 } },
+    { stage: 0, name: 'LARANJA',      recipe: { r: 1, y: 1 } },
+    { stage: 0, name: 'VERDE',        recipe: { y: 1, b: 1 } },
+    { stage: 0, name: 'MARROM',       recipe: { r: 1, y: 1, b: 1 } },
+    { stage: 0, name: 'VERDE-LIMÃO',  recipe: { y: 2, b: 1 } },
+    { stage: 0, name: 'TURQUESA',     recipe: { y: 1, b: 2 } },
+    { stage: 0, name: 'MAGENTA',      recipe: { r: 2, b: 1 } },
+    // Fase 2 — + branco
+    { stage: 1, name: 'ROSA',         recipe: { r: 1, w: 1 } },
+    { stage: 1, name: 'AZUL-CLARO',   recipe: { b: 1, w: 1 } },
+    { stage: 1, name: 'LILÁS',        recipe: { r: 1, b: 1, w: 1 } },
+    { stage: 1, name: 'PÊSSEGO',      recipe: { r: 1, y: 1, w: 1 } },
+    { stage: 1, name: 'CREME',        recipe: { y: 1, w: 2 } },
+    { stage: 1, name: 'CORAL',        recipe: { r: 2, y: 1, w: 1 } },
+    // Fase 3 — + preto
+    { stage: 2, name: 'CINZA',        recipe: { w: 1, k: 1 } },
+    { stage: 2, name: 'AZUL-ESCURO',  recipe: { b: 2, k: 1 } },
+    { stage: 2, name: 'VERDE-ESCURO', recipe: { y: 1, b: 1, k: 1 } },
+    { stage: 2, name: 'VINHO',        recipe: { r: 3, b: 1, k: 1 } },
+    { stage: 2, name: 'CINZA-CLARO',  recipe: { w: 2, k: 1 } },
+    { stage: 2, name: 'ANIL',         recipe: { r: 1, b: 2 } },
+    // Fase 4 — + verde
+    { stage: 3, name: 'VERDE-ÁGUA',   recipe: { g: 1, w: 1 } },
+    { stage: 3, name: 'TIJOLO',       recipe: { r: 2, y: 1, b: 1 } },
+    { stage: 3, name: 'MOSTARDA',     recipe: { r: 1, y: 2, b: 1 } },
+    { stage: 3, name: 'AMEIXA',       recipe: { r: 2, y: 1, b: 2 } },
+    { stage: 3, name: 'AZUL-JEANS',   recipe: { r: 1, y: 1, b: 3 } },
+    { stage: 3, name: 'BEGE',         recipe: { r: 1, y: 2, b: 1, w: 2 } },
   ].map(t => {
-    t.recipe = Object.assign({ r: 0, y: 0, b: 0, w: 0 }, t.recipe);
+    t.recipe = Object.assign(emptyUnits(), t.recipe);
     t.rgb = mixAmounts(t.recipe);
     return t;
   });
+
+  /** Tintas que aparecem na paleta no desafio de índice "level". */
+  const paintsForLevel = level => STAGE_PAINTS[TARGETS[Math.min(level, TARGETS.length - 1)].stage];
 
   // Quão perto (distância RGB) a mistura precisa chegar para vencer.
   const MATCH_TOLERANCE = 0.16;
@@ -115,6 +162,7 @@
   /**
    * Compara a mistura do pote com a meta.
    * Retorna { match, distance, hint } — a dica é gentil e diz o que fazer.
+   * As dicas comparam PIGMENTOS (o verde conta como amarelo + azul).
    */
   function evaluate(units, target) {
     const rgb = mixAmounts(units);
@@ -123,20 +171,25 @@
     if (d <= MATCH_TOLERANCE) return { match: true, distance: d, hint: null };
 
     const targetName = target.name.toLowerCase();
-    // 1) Alguma cor que NÃO faz parte da receita?
-    const extra = KEYS.find(k => target.recipe[k] === 0 && units[k] > 0);
+    const have = toPigments(units);
+    const want = toPigments(target.recipe);
+
+    // 1) Algum pigmento que NÃO faz parte da receita?
+    const extra = PIGMENTS.find(k => want[k] === 0 && have[k] > 0);
     if (extra) {
+      // Diz o nome da tinta que a criança realmente usou (pode ter sido o verde)
+      const used = units[extra] > 0 ? extra : 'g';
       return {
         match: false, distance: d,
-        hint: { type: 'wrong', key: extra, text: `Ops! O ${BASE_PAINTS[extra].name} não faz parte do ${targetName}. Toque em ↺ para limpar o pote.` },
+        hint: { type: 'wrong', key: used, text: `Ops! O ${BASE_PAINTS[used].name} não faz parte do ${targetName}. Toque em ↺ para limpar o pote.` },
       };
     }
-    // 2) Qual cor da receita está mais em falta?
-    const total = KEYS.reduce((s, k) => s + units[k], 0);
-    const tTotal = KEYS.reduce((s, k) => s + target.recipe[k], 0);
+    // 2) Qual pigmento da receita está mais em falta?
+    const total = PIGMENTS.reduce((s, k) => s + have[k], 0);
+    const tTotal = PIGMENTS.reduce((s, k) => s + want[k], 0);
     let best = null, bestGap = 0;
-    for (const k of KEYS) {
-      const gap = target.recipe[k] / tTotal - units[k] / total;
+    for (const k of PIGMENTS) {
+      const gap = want[k] / tTotal - have[k] / total;
       if (gap > bestGap) { bestGap = gap; best = k; }
     }
     const name = best ? BASE_PAINTS[best].name : 'tinta';
@@ -147,7 +200,7 @@
   }
 
   global.MixLogic = {
-    BASE_PAINTS, KEYS, TARGETS, MATCH_TOLERANCE,
-    rybToRgb, mixAmounts, evaluate, distance, lerp, shade, toCss,
+    BASE_PAINTS, KEYS, TARGETS, STAGE_PAINTS, MATCH_TOLERANCE,
+    rybToRgb, mixAmounts, evaluate, emptyUnits, paintsForLevel, distance, lerp, shade, toCss,
   };
 })(window);

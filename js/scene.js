@@ -16,13 +16,10 @@
   const LAYOUT = {
     paletteCenter: { x: 0, z: 0.7 },
     pot: { x: 0, z: 0.9, scale: 0.92, inner: 1.5 }, // inner = raio útil para pincel/mistura
-    puddles: [
-      { key: 'r', x: 0.0, z: -2.5 },
-      { key: 'y', x: -3.1, z: 1.15 },
-      { key: 'b', x: 3.1, z: 1.15 },
-      { key: 'w', x: -2.2, z: 3.4 },
-    ],
-    hole: { x: 2.25, z: 3.75, r: 0.6 },
+    // As poças ficam num círculo em volta do pote. Quantas aparecem depende
+    // da fase (3 a 6); "order" é a sequência no sentido horário.
+    ring: { x: 0, z: 0.9, radius: 3.2, order: ['r', 'b', 'g', 'k', 'w', 'y'] },
+    hole: { x: 0, z: 4.35, r: 0.45 },
     mascot: { x: -3.9, z: -3.3 },
     park: { x: 3.3, z: 3.0 }, // onde o pincel descansa antes do primeiro toque
   };
@@ -544,15 +541,40 @@
     }
     pts.push(new THREE.Vector3(LAYOUT.mascot.x, 2.1, LAYOUT.mascot.z));
     pts.push(new THREE.Vector3(LAYOUT.mascot.x - 0.9, 0, LAYOUT.mascot.z));
-    for (const p of LAYOUT.puddles) pts.push(new THREE.Vector3(p.x, PALETTE_TOP + 0.85, p.z));
+    pts.push(new THREE.Vector3(LAYOUT.ring.x, PALETTE_TOP + 0.85, LAYOUT.ring.z - LAYOUT.ring.radius));
     return pts;
+  }
+
+  /**
+   * Posições das poças ativas: espalhadas igualmente no círculo em volta
+   * do pote, deixando livre a parte de baixo (onde fica o furo do dedão).
+   * Retorna { chave: {x, z} }.
+   */
+  function puddleSlots(keys) {
+    const R = LAYOUT.ring;
+    const active = R.order.filter(k => keys.includes(k));
+    const n = active.length;
+    const start = -Math.PI / 2 + (n % 2 === 0 ? Math.PI / n : 0);
+    const slots = {};
+    active.forEach((k, i) => {
+      const a = start + (i / n) * Math.PI * 2;
+      slots[k] = { x: R.x + Math.cos(a) * R.radius, z: R.z + Math.sin(a) * R.radius };
+    });
+    return slots;
   }
 
   function build(scene) {
     buildLights(scene);
     buildTable(scene);
     const palette = buildPalette(scene);
-    const puddles = LAYOUT.puddles.map(def => buildPuddle(scene, def));
+    // Cria as 6 poças; o jogo decide quais aparecem em cada fase
+    const puddles = global.MixLogic.KEYS.map(key => {
+      const p = buildPuddle(scene, { key, x: LAYOUT.ring.x, z: LAYOUT.ring.z });
+      p.scale.setScalar(0.001);
+      p.visible = false;
+      Object.assign(p.userData, { active: false, appear: 0, slot: { x: LAYOUT.ring.x, z: LAYOUT.ring.z } });
+      return p;
+    });
     const pot = buildPot(scene);
     const brush = buildBrush(scene);
     const mascot = buildMascot(scene);
@@ -560,5 +582,5 @@
     return { palette, puddles, pot, brush, mascot, fx };
   }
 
-  global.World = { build, getFitPoints, potInnerRadius, PALETTE_TOP, LAYOUT };
+  global.World = { build, getFitPoints, puddleSlots, potInnerRadius, PALETTE_TOP, LAYOUT };
 })(window);

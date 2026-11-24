@@ -1,10 +1,17 @@
 # Mistura de Cores — demo jogável (Three.js)
 
 Jogo infantil: pegue tinta com o pincel, leve ao pote e gire para misturar até chegar na cor-alvo.
-Tintas base: **vermelho, amarelo, azul e branco**.
-Desafios (20), do mais fácil ao mais difícil: Roxo → Laranja → Verde → Rosa → Azul-claro → Marrom → Lilás
-→ Verde-limão → Turquesa → Pêssego → Magenta → Anil → Creme → Verde-água → Coral → Tijolo → Mostarda
-→ Ameixa → Azul-jeans → Bege. As receitas estão na lista `TARGETS` em `js/colors.js`.
+**Progressão de tintas na paleta** (25 desafios):
+
+| Fase | Tintas | Desafios |
+|---|---|---|
+| 1 | vermelho, amarelo, azul | Roxo, Laranja, Verde, Marrom, Verde-limão, Turquesa, Magenta |
+| 2 | + branco | Rosa, Azul-claro, Lilás, Pêssego, Creme, Coral |
+| 3 | + preto | Cinza, Azul-escuro, Verde-escuro, Vinho, Cinza-claro, Anil |
+| 4 | + verde | Verde-água, Tijolo, Mostarda, Ameixa, Azul-jeans, Bege |
+
+Branco clareia, preto escurece e o verde vale meio amarelo + meio azul. As receitas e fases estão em
+`TARGETS` e `STAGE_PAINTS`, em `js/colors.js`.
 
 ## Como executar
 

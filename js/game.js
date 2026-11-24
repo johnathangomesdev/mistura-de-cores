@@ -72,7 +72,8 @@
   // ---------------- Estado do jogo ----------------
   const state = {
     level: 0,
-    units: { r: 0, y: 0, b: 0, w: 0 }, // porções de cada tinta no pote
+    units: M.emptyUnits(),       // porções de cada tinta no pote
+    paints: [],                  // tintas disponíveis na paleta nesta fase
     drops: 0,                    // quantas porções caíram no pote
     mixed: 1,                    // 0 = listrado, 1 = totalmente misturado
     startRGB: null,              // cor do pote antes da última porção
@@ -321,7 +322,7 @@
   // =================================================================
   // Interações: pegar tinta, despejar no pote, girar para misturar
   // =================================================================
-  function totalUnits() { return state.units.r + state.units.y + state.units.b + state.units.w; }
+  function totalUnits() { return M.KEYS.reduce((s, k) => s + state.units[k], 0); }
 
   function updateInteraction(dt) {
     const touching = pointer.down && lift < 0.22 && !state.celebrating;
@@ -330,6 +331,7 @@
     if (touching) {
       // 1) Encostou numa poça? Carrega o pincel com aquela cor.
       for (const p of world.puddles) {
+        if (!p.userData.active || p.userData.appear < 0.6) continue; // só as tintas desta fase
         const dx = tip.x - p.position.x, dz = tip.z - p.position.z;
         if (dx * dx + dz * dz < PICK_RADIUS * PICK_RADIUS && state.brushLoad !== p.userData.key) {
           loadBrush(p);
@@ -516,13 +518,45 @@
     ui.count.textContent = `${state.level + 1}/${M.TARGETS.length}`;
     // "Arruma" a paleta: as poças dão um pulinho
     world.puddles.forEach((p, i) => { p.userData.wobbleT = -i * 0.12; });
-    if (announce) { showToast(`Novo desafio: ${t.name}!`, 'good', 2.2); Sfx.pop(); }
+
+    // Progressão: a paleta mostra só as tintas desta fase (3, 4, 5 ou 6)
+    const paints = M.paintsForLevel(state.level);
+    const newPaints = paints.filter(k => !state.paints.includes(k));
+    const firstSetup = state.paints.length === 0;
+    state.paints = paints.slice();
+    setupPuddles(paints);
+
+    if (!firstSetup && newPaints.length) {
+      // Fase nova: apresenta a tinta que chegou
+      const names = newPaints.map(k => M.BASE_PAINTS[k].name);
+      const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}` : names[0];
+      showToast(`${names.length > 1 ? 'Novas cores' : 'Nova cor'} na paleta: ${list.toUpperCase()}! Desafio: ${t.name}`, 'good', 3.4);
+      Voice.say(`${names.length > 1 ? 'Novas cores' : 'Nova cor'}! ${list}!`, 0.3);
+      Sfx.pop();
+    } else if (announce) {
+      showToast(`Novo desafio: ${t.name}!`, 'good', 2.2);
+      Sfx.pop();
+    }
+  }
+
+  /** Mostra/esconde as poças e as distribui em círculo em volta do pote. */
+  function setupPuddles(keys) {
+    const slots = W.puddleSlots(keys);
+    for (const p of world.puddles) {
+      const u = p.userData;
+      u.active = keys.includes(u.key);
+      if (u.active) {
+        if (u.appear < 0.01) p.position.set(slots[u.key].x, W.PALETTE_TOP, slots[u.key].z); // nasce no lugar
+        u.slot = slots[u.key];
+      }
+    }
+    if (state.brushLoad && !keys.includes(state.brushLoad)) state.brushLoad = null;
   }
 
   /** Esvazia o pote e limpa o pincel (botão ↺ também usa isto). */
   function clearPot() {
     state.lastBase = currentBaseColor();
-    state.units = { r: 0, y: 0, b: 0, w: 0 };
+    state.units = M.emptyUnits();
     state.drops = 0;
     state.mixed = 1;
     state.startRGB = state.finalRGB = null;
@@ -552,6 +586,7 @@
 
   function startGame() {
     state.level = 0;
+    state.paints = [];
     state.ended = false;
     state.celebrating = false;
     ui.endOv.classList.remove('show');
@@ -658,6 +693,13 @@
   function updatePuddles(dt) {
     for (const p of world.puddles) {
       const u = p.userData;
+      // Aparece/some com um "pop" e desliza até o lugar novo no círculo
+      u.appear = damp(u.appear, u.active ? 1 : 0, 7, dt);
+      const s = u.appear < 0.995 ? u.appear * (1 + 0.25 * Math.sin(u.appear * Math.PI)) : 1;
+      p.scale.setScalar(Math.max(0.001, s));
+      p.visible = u.appear > 0.01;
+      p.position.x = damp(p.position.x, u.slot.x, 5, dt);
+      p.position.z = damp(p.position.z, u.slot.z, 5, dt);
       u.wobbleT += dt;
       const t = Math.max(0, u.wobbleT);
       const w = Math.sin(t * 22) * 0.16 * Math.exp(-t * 5);
