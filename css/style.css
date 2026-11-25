@@ -288,3 +288,25 @@ html, body {
 #end-swatches { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 18px; }
 #end-swatches div { display: flex; flex-direction: column; align-items: center; font-size: 13px; font-weight: 700; }
 #end-swatches b { width: 52px; height: 40px; border-radius: 12px; margin-bottom: 4px; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .2); }
+
+/* ===== Tela de carregamento (logo Steamboat Studio) ===== */
+#splash {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4vmin;
+  background: radial-gradient(circle at 50% 40%, #fffaf0 0%, #f3e6cc 100%);
+  transition: opacity .6s ease;
+}
+#splash.hide { opacity: 0; pointer-events: none; }
+#splash-logo {
+  width: min(62vmin, 420px); height: auto;
+  animation: splash-in .8s cubic-bezier(.2, 1.4, .4, 1) both, splash-bob 2.4s ease-in-out .8s infinite;
+}
+#splash-bar {
+  width: min(56vmin, 360px); height: 24px; padding: 4px;
+  border: 3px solid #0b1d33; border-radius: 999px; background: #fff8ec;
+}
+#splash-fill { width: 0; height: 100%; border-radius: 999px; background: #0b1d33; }
+#splash-text { color: #0b1d33; font-weight: 600; font-size: 16px; letter-spacing: .08em; opacity: .75; }
+@keyframes splash-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes splash-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1.2vmin) rotate(-1.5deg); } }

@@ -12,6 +12,35 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- ===== Tela de carregamento: logo do estúdio + barra de progresso ===== -->
+  <div id="splash">
+    <img id="splash-logo" src="img/steamboat-logo.png" alt="Steamboat Studio">
+    <div id="splash-bar"><div id="splash-fill"></div></div>
+    <div id="splash-text">Carregando…</div>
+  </div>
+  <script>
+    // Barra da tela de carregamento: avança sozinha e só completa quando a página terminou de carregar
+    (function () {
+      var MIN_MS = 2600, t0 = Date.now(), loaded = false, shown = 0;
+      var fill = document.getElementById('splash-fill');
+      window.addEventListener('load', function () { loaded = true; });
+      function tick() {
+        var t = Math.min(1, (Date.now() - t0) / MIN_MS);
+        var goal = loaded ? t : Math.min(0.9, t);                // sem carregar, para em 90%
+        shown += (goal - shown) * 0.15;
+        if (goal === 1 && shown > 0.995) shown = 1;
+        fill.style.width = (shown * 100).toFixed(1) + '%';
+        if (shown < 1) return requestAnimationFrame(tick);
+        setTimeout(function () {
+          var s = document.getElementById('splash');
+          s.classList.add('hide');
+          setTimeout(function () { s.remove(); window.dispatchEvent(new Event('splashdone')); }, 600);
+        }, 250);
+      }
+      requestAnimationFrame(tick);
+    })();
+  </script>
+
   <!-- Cena 3D (Three.js desenha aqui) -->
   <canvas id="game"></canvas>
 
