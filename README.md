@@ -49,9 +49,9 @@ Alternativa com Node: `npx serve .`
 | 🖼️ Temas | Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa) |
 | 🚫 Retirar Ads | Por enquanto só mostra "Em breve" (o jogo ainda não tem anúncios nem loja). Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
 
-As figuras dos botões ficam em `img/ui/` (recortadas da folha de botões, sem a plaquinha de texto). O nome
-de cada botão é desenhado por código, traduzido, numa plaquinha creme que só aparece em telas grandes.
-`play.png` é usado em Continuar/Jogar de novo; `ranking.png` está guardado para quando houver ranking.
+As figuras dos botões ficam em `img/ui/` (recortadas da folha de ícones). O nome de cada botão é desenhado
+por código, traduzido, numa plaquinha creme que só aparece em telas grandes. `play.png` é usado em
+Continuar/Jogar de novo; `ranking.png` e `palette.png` estão guardados (ainda sem botão).
 
 As escolhas ficam salvas no aparelho (`localStorage`: `mistura.settings`, `mistura.lang`).
 A música é um loop gerado por código (WebAudio), sem arquivos.

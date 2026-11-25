@@ -82,20 +82,12 @@ html, body {
   transition: transform .12s;
 }
 .img-btn[hidden] { display: none; }
-.img-btn > img, .img-btn > .restart-ico {
+.img-btn > img {
   width: var(--btn); height: var(--btn); object-fit: contain; display: block;
   filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .25));
 }
-.img-btn:hover > img, .img-btn:hover > .restart-ico { transform: scale(1.06); }
+.img-btn:hover > img { transform: scale(1.06); }
 .img-btn:active { transform: translateY(3px) scale(.94); }
-/* ↺ não tem figura na folha: círculo no mesmo estilo de adesivo */
-.img-btn > .restart-ico {
-  box-sizing: border-box; width: calc(var(--btn) * .84); height: calc(var(--btn) * .84); margin: calc(var(--btn) * .08);
-  border-radius: 50%; display: grid; place-items: center; color: #fff;
-  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--purple-l) 85%, #fff), var(--purple) 70%);
-  border: 3px solid #2a1838; box-shadow: 0 0 0 4px #fff;
-}
-.restart-ico svg { width: 62%; height: 62%; }
 /* Plaquinha creme com o nome (como na arte), só em telas grandes */
 .img-btn .plate {
   display: none;
@@ -114,7 +106,7 @@ html, body {
 }
 
 #btn-restart.attention { animation: attention 0.9s ease-in-out 4; }
-#btn-restart.attention .restart-ico { background: #ff9f1c; }
+#btn-restart.attention img { filter: drop-shadow(0 0 4px #ff9f1c) drop-shadow(0 0 8px #ff9f1c); }
 @keyframes attention {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.18); }
