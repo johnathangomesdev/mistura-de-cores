@@ -3,6 +3,7 @@
   --purple: #8b3fd9;
   --purple-d: #5a1a99;
   --purple-dd: #3f0f72;
+  --purple-l: #a259ec;
   --cream: #fff8ec;
   --yellow: #ffd23f;
   --font: 'Fredoka', 'Baloo 2', 'Nunito', 'Segoe UI Rounded', system-ui, sans-serif;
@@ -51,19 +52,33 @@ html, body {
 .side.right { align-items: flex-end; }
 
 .icon-btn {
-  width: 48px; height: 48px;
+  width: var(--btn, 46px); height: var(--btn, 46px);
+  padding: 0;
   border: none;
   border-radius: 16px;
-  background: rgba(139, 63, 217, .82);
+  background: color-mix(in srgb, var(--purple) 82%, transparent);
   color: #fff;
-  box-shadow: 0 4px 0 rgba(63, 15, 114, .55);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--purple-dd) 55%, transparent);
   display: grid; place-items: center;
   cursor: pointer;
   transition: transform .12s;
 }
-.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(63, 15, 114, .55); }
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--purple-dd) 55%, transparent); }
 .icon-btn svg { width: 26px; height: 26px; fill: currentColor; }
-#btn-restart { width: 42px; height: 42px; background: rgba(139, 63, 217, .6); }
+.icon-btn svg .hole { fill: var(--purple); }
+.icon-btn[hidden] { display: none; }
+
+/* Botões do HUD: 2×2 à esquerda, fileira embaixo do selo à direita */
+.btn-grid { display: grid; grid-template-columns: repeat(2, var(--btn, 46px)); gap: 7px; }
+.btn-row { display: flex; gap: 7px; }
+#btn-skip, #btn-help, #btn-theme, #btn-noads { background: color-mix(in srgb, var(--purple) 62%, transparent); }
+#btn-noads { color: #ffe680; }
+@media (max-width: 430px) {
+  :root { --btn: 40px; }
+  .icon-btn svg { width: 23px; height: 23px; }
+  .btn-grid, .btn-row { gap: 5px; }
+}
+
 #btn-restart.attention { animation: attention 0.9s ease-in-out 4; background: #ff9f1c; }
 @keyframes attention {
   0%, 100% { transform: scale(1); }
@@ -76,7 +91,7 @@ html, body {
   border-radius: 22px;
   padding: 4px 16px 12px;
   text-align: center;
-  box-shadow: 0 5px 0 rgba(90, 26, 153, .35), 0 10px 22px rgba(0, 0, 0, .15);
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--purple-d) 35%, transparent), 0 10px 22px rgba(0, 0, 0, .15);
   min-width: 150px;
   position: relative;
 }
@@ -143,7 +158,7 @@ html, body {
   color: var(--purple-d);
   text-align: center;
   max-width: 560px;
-  box-shadow: 0 4px 0 rgba(90, 26, 153, .3);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--purple-d) 30%, transparent);
   transition: transform .2s;
 }
 #instruction.bump { animation: bump .35s ease-out; }
@@ -155,7 +170,7 @@ html, body {
 
 #progress-panel {
   width: min(560px, 100%);
-  background: linear-gradient(#a259ec, #7a2fc9);
+  background: linear-gradient(var(--purple-l), var(--purple));
   border-radius: 26px;
   padding: 8px 14px 10px 8px;
   display: flex;
@@ -249,7 +264,7 @@ html, body {
 .overlay {
   position: fixed; inset: 0; z-index: 20;
   display: none; align-items: center; justify-content: center;
-  background: rgba(63, 15, 114, .5);
+  background: color-mix(in srgb, var(--purple-dd) 50%, transparent);
   padding: 20px;
 }
 .overlay.show { display: flex; }
@@ -284,6 +299,44 @@ html, body {
 }
 .toggle-btn.on { border-color: #2bb34a; color: #1a7f31; background: #eafbe9; }
 .panel p.small { font-size: 14px; font-weight: 500; margin: 0; opacity: .8; }
+.panel { max-height: calc(100vh - 40px); overflow-y: auto; }
+.big-btn:disabled { background: #b9b0c6; box-shadow: 0 6px 0 #8c8299; cursor: default; }
+
+/* Configurações (dentro da pausa) */
+.settings { margin-top: 20px; padding-top: 14px; border-top: 3px dashed color-mix(in srgb, var(--purple) 35%, transparent); }
+.settings h3 { margin: 0 0 10px; font-size: 22px; }
+.set-label { font-weight: 700; font-size: 15px; margin-bottom: 6px; opacity: .8; }
+.seg { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.seg button {
+  border: 3px solid #b9a6d6; background: #fff; color: #6b5a85; cursor: pointer;
+  font-family: var(--font); font-weight: 700; font-size: 16px;
+  padding: 7px 12px; border-radius: 14px;
+}
+.seg button.on { border-color: var(--purple); background: var(--purple); color: #fff; }
+.set-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.set-row .toggle-btn { margin: 14px 0 0; }
+.settings > .toggle-btn { margin-top: 10px; }
+
+/* Ajuda */
+.help-steps { list-style: none; padding: 0; margin: 6px 0 18px; text-align: left; }
+.help-steps li { display: flex; align-items: center; gap: 12px; margin: 9px 0; font-size: 17px; font-weight: 600; }
+.help-steps i {
+  flex: 0 0 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center; font-style: normal; font-size: 18px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 0 0 2px rgba(0, 0, 0, .08);
+}
+.help-steps i.ico { background: var(--purple); color: #fff; font-weight: 700; }
+
+/* Temas */
+#theme-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; margin: 8px 0 18px; min-width: min(300px, 70vw); }
+#theme-picker button {
+  border: 4px solid transparent; border-radius: 18px; background: #fff; cursor: pointer;
+  padding: 8px 6px 6px; font-family: var(--font); font-weight: 700; font-size: 15px; color: #4a3a5e;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .12);
+}
+#theme-picker button.on { border-color: var(--purple); }
+#theme-picker .sw { display: block; height: 44px; border-radius: 12px; margin-bottom: 6px; position: relative; overflow: hidden; }
+#theme-picker .sw b { position: absolute; right: 6px; top: 6px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #fff; }
 
 #end-swatches { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 18px; }
 #end-swatches div { display: flex; flex-direction: column; align-items: center; font-size: 13px; font-weight: 700; }
@@ -310,3 +363,14 @@ html, body {
 #splash-text { color: #0b1d33; font-weight: 600; font-size: 16px; letter-spacing: .08em; opacity: .75; }
 @keyframes splash-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
 @keyframes splash-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1.2vmin) rotate(-1.5deg); } }
+
+/* Celular estreito: cartaz e selo menores para caber a coluna de botões */
+@media (max-width: 430px) {
+  #hud-top { padding-left: 8px; padding-right: 8px; gap: 6px; }
+  #target-card { padding: 4px 10px 10px; min-width: 0; }
+  #target-name { font-size: 26px; }
+  #target-name.long { font-size: 19px; }
+  #badge { padding: 5px 8px 3px; }
+  #badge span { font-size: 11px; }
+  #badge strong { font-size: 24px; }
+}

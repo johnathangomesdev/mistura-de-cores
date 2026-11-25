@@ -34,13 +34,23 @@
   const AUTO_MIX_SECONDS = 2.2;           // modo fácil: tempo da mistura automática
   const AUTO_SPIN = 7;                    // velocidade do giro automático (rad/s)
 
-  // Mistura automática (opcional, no menu de pausa): basta encostar o
-  // pincel no pote e a tinta se mistura sozinha. Fica salvo no aparelho.
-  const settings = { easyMix: false };
+  // Configurações salvas no aparelho (menu de pausa / botões do HUD):
+  // easyMix = mistura automática (basta encostar o pincel no pote),
+  // music / voice = liga-desliga, theme = tema visual, noAds = comprou "sem anúncios".
+  // O idioma fica no i18n.js ('mistura.lang').
+  const T = (k, p) => I18N.t(k, p);
+  const settings = { easyMix: false, music: true, voice: true, theme: 'classic', noAds: false };
   try {
     const saved = localStorage.getItem('mistura.autoMix');
     if (saved !== null) settings.easyMix = saved === '1';
+    Object.assign(settings, JSON.parse(localStorage.getItem('mistura.settings') || '{}'));
   } catch (_) { /* sem armazenamento: usa o padrão */ }
+  function saveSettings() {
+    try {
+      localStorage.setItem('mistura.autoMix', settings.easyMix ? '1' : '0');
+      localStorage.setItem('mistura.settings', JSON.stringify(settings));
+    } catch (_) { /* ok */ }
+  }
 
   // ---------------- DOM ----------------
   const $ = id => document.getElementById(id);
@@ -52,6 +62,10 @@
     toast: $('toast'), banner: $('win-banner'),
     pauseOv: $('pause-overlay'), endOv: $('end-overlay'), endSwatches: $('end-swatches'),
     btnPause: $('btn-pause'), btnRestart: $('btn-restart'), btnResume: $('btn-resume'), btnReplay: $('btn-replay'),
+    btnSkip: $('btn-skip'), btnHelp: $('btn-help'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
+    helpOv: $('help-overlay'), themeOv: $('theme-overlay'), adsOv: $('ads-overlay'),
+    btnMusic: $('btn-music'), btnVoice: $('btn-voice'), btnEasy: $('btn-easy'),
+    langPicker: $('lang-picker'), themePicker: $('theme-picker'),
   };
 
   // ---------------- Three.js ----------------
@@ -128,9 +142,66 @@
   };
 
   // =================================================================
+  // Música de fundo: loop calmo de 4 compassos (C - G - Am - F) gerado
+  // com WebAudio (baixo + arpejo + melodia). Sem arquivos de áudio.
+  // =================================================================
+  const Music = {
+    STEP: 60 / 100 / 2,                       // colcheia a 100 bpm
+    BASS: [48, 43, 45, 41],                   // C3, G2, A2, F2 (um por compasso)
+    ARP: [[60, 64, 67], [59, 62, 67], [57, 60, 64], [57, 60, 65]],
+    MELODY: [76, 0, 79, 0, 81, 0, 79, 0,  74, 0, 0, 71, 74, 0, 79, 0,
+             72, 0, 76, 0, 81, 0, 79, 76,  77, 0, 76, 0, 72, 0, 0, 0],
+    out: null, timer: null, step: 0, next: 0,
+    hz: m => 440 * Math.pow(2, (m - 69) / 12),
+    note(freq, t, dur, type, vol) {
+      const ctx = Sfx.ctx;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(this.out);
+      o.start(t);
+      o.stop(t + dur + 0.05);
+    },
+    playStep(i, t) {
+      const bar = Math.floor(i / 8) % 4, s = i % 8;
+      if (s === 0 || s === 4) this.note(this.hz(this.BASS[bar]), t, this.STEP * 3.6, 'sine', 0.11);
+      const arp = this.ARP[bar];
+      this.note(this.hz(arp[[0, 1, 2, 1][s % 4]] + 12), t, this.STEP * 1.6, 'sine', 0.022);
+      const m = this.MELODY[i % 32];
+      if (m) this.note(this.hz(m), t, this.STEP * 2.6, 'triangle', 0.05);
+    },
+    /** Liga (se a música estiver ativada e o áudio já liberado por um toque). */
+    start() {
+      const ctx = Sfx.ctx;
+      if (!ctx || !settings.music || this.timer) return;
+      this.out = ctx.createGain();
+      this.out.gain.setValueAtTime(0.0001, ctx.currentTime);
+      this.out.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 1.5);
+      this.out.connect(ctx.destination);
+      this.next = ctx.currentTime + 0.1;
+      this.timer = setInterval(() => {
+        while (this.next < ctx.currentTime + 0.25) { this.playStep(this.step++, this.next); this.next += this.STEP; }
+      }, 60);
+    },
+    stop() {
+      if (!this.timer) return;
+      clearInterval(this.timer);
+      this.timer = null;
+      const out = this.out, ctx = Sfx.ctx;
+      out.gain.cancelScheduledValues(ctx.currentTime);
+      out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), ctx.currentTime);
+      out.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+      setTimeout(() => out.disconnect(), 600);
+    },
+  };
+
+  // =================================================================
   // Voz: fala o nome da cor quando a criança acerta.
-  // Usa a síntese de voz do próprio navegador (Web Speech API) em pt-BR,
-  // com tom bem agudo para soar como uma criança. Sem arquivos de áudio.
+  // Usa a síntese de voz do próprio navegador (Web Speech API) no idioma
+  // escolhido, com tom bem agudo para soar como uma criança. Sem arquivos.
   // =================================================================
   const Voice = {
     voice: null,
@@ -138,12 +209,14 @@
     supported: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window,
     pickVoice() {
       if (!this.supported) return;
+      const lang = I18N.voiceLang();               // ex.: 'pt-BR'
+      const re = new RegExp('^' + lang.replace('-', '[-_]?'), 'i');
       const voices = window.speechSynthesis.getVoices();
-      const pt = voices.filter(v => /^pt[-_]?BR/i.test(v.lang));
-      const anyPt = pt.length ? pt : voices.filter(v => /^pt/i.test(v.lang));
+      const exact = voices.filter(v => re.test(v.lang));
+      const any = exact.length ? exact : voices.filter(v => v.lang.slice(0, 2).toLowerCase() === lang.slice(0, 2));
       // Vozes femininas ficam mais parecidas com criança quando o tom sobe
-      const female = /francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila|female|feminina|google portugu/i;
-      this.voice = anyPt.find(v => female.test(v.name)) || anyPt[0] || null;
+      const female = /francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila|samantha|zira|aria|jenny|karen|helena|sabina|laura|elvira|m[oó]nica|paulina|female|feminin|google/i;
+      this.voice = any.find(v => female.test(v.name)) || any[0] || null;
     },
     /** Navegadores de celular só liberam a fala depois de um toque. */
     unlock() {
@@ -155,13 +228,13 @@
       window.speechSynthesis.speak(u);
     },
     say(text, delay = 0) {
-      if (!this.supported) return;
+      if (!this.supported || !settings.voice) return;
       setTimeout(() => {
-        if (state.paused) return;
+        if (state.paused || !settings.voice) return;
         if (!this.voice) this.pickVoice();
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'pt-BR';
+        u.lang = I18N.voiceLang();
         if (this.voice) u.voice = this.voice;
         u.pitch = 1.9;  // bem agudo = voz de criança
         u.rate = 1.05;
@@ -176,8 +249,23 @@
     window.speechSynthesis.onvoiceschanged = () => Voice.pickVoice();
   }
 
+  /** Nome da cor-alvo no idioma atual ("AZUL-CLARO"). */
+  const colorName = t => I18N.color(t.id);
   /** Nome da cor para falar ("AZUL-CLARO" -> "azul claro"). */
-  const spokenName = name => name.toLowerCase().replace(/-/g, ' ');
+  const spokenName = name => I18N.lower(name).replace(/-/g, ' ');
+  /** Texto da dica quando a mistura não bateu com a meta. */
+  function hintText(hint, target) {
+    if (hint.type === 'empty') return T('hintEmpty');
+    const p = { paint: I18N.paint(hint.key), color: I18N.lower(colorName(target)) };
+    return T(hint.type === 'wrong' ? 'hintWrong' : 'hintMore', p);
+  }
+
+  // Navegadores só liberam som/voz depois de um toque: qualquer toque na tela serve
+  document.addEventListener('pointerdown', () => {
+    Sfx.unlock();
+    Voice.unlock();
+    Music.start();
+  }, true);
 
   // =================================================================
   // Câmera: enquadra a paleta no espaço livre entre os HUDs
@@ -346,7 +434,7 @@
           if (state.stirLock || state.autoMixing) {
             if (!state.lockWarned) {
               state.lockWarned = true;
-              showToast('Misturando! Tire o dedo da tela para pegar outra cor.', 'warn', 2.4);
+              showToast(T('lockWarn'), 'warn', 2.4);
             }
             continue;
           }
@@ -444,7 +532,7 @@
 
     world.fx.spawnDrops(tip, rgb, surfaceWorldY() + 0.02);
     Sfx.plop();
-    if (wasEmpty) showToast(`Agora pegue outra cor!`, 'good', 2.2);
+    if (wasEmpty) showToast(T('instAnother'), 'good', 2.2);
   }
 
   /**
@@ -490,7 +578,7 @@
     if (res.match) {
       win();
     } else {
-      showToast(res.hint.text, 'warn', 4.2);
+      showToast(hintText(res.hint, target), 'warn', 4.2);
       mascotAnim('shake');
       Sfx.hmm();
       if (res.hint.type === 'wrong') {
@@ -512,13 +600,14 @@
     mascotAnim('jump');
     Sfx.win();
     // A criança "fala" a cor que acabou de fazer
-    const cheers = ['Muito bem!', 'Que lindo!', 'Consegui!', 'Que legal!'];
-    Voice.say(`${spokenName(M.TARGETS[state.level].name)}! ${cheers[state.level % cheers.length]}`, 0.35);
-    ui.banner.textContent = ['Muito bem!', 'Incrível!', 'Perfeito!', 'Uau!'][state.level % 4];
+    const cheers = T('cheers'), banners = T('banners');
+    const name = colorName(M.TARGETS[state.level]);
+    Voice.say(`${spokenName(name)}! ${cheers[state.level % cheers.length]}`, 0.35);
+    ui.banner.textContent = banners[state.level % banners.length];
     ui.banner.classList.remove('show');
     void ui.banner.offsetWidth;
     ui.banner.classList.add('show');
-    showToast(`Você fez ${M.TARGETS[state.level].name.toLowerCase()}!`, 'good', 2.6);
+    showToast(T('youMade', { color: I18N.lower(name) }), 'good', 2.6);
   }
 
   function nextLevel() {
@@ -532,8 +621,8 @@
   function startLevel(announce) {
     clearPot();
     const t = M.TARGETS[state.level];
-    ui.name.textContent = t.name;
-    ui.name.classList.toggle('long', t.name.length > 7); // nomes compridos usam fonte menor
+    const tName = colorName(t);
+    refreshTargetName();
     ui.name.style.color = M.toCss(M.shade(t.rgb, 0.82));
     ui.swatch.style.background = M.toCss(t.rgb);
     ui.count.textContent = `${state.level + 1}/${M.TARGETS.length}`;
@@ -549,13 +638,13 @@
 
     if (!firstSetup && newPaints.length) {
       // Fase nova: apresenta a tinta que chegou
-      const names = newPaints.map(k => M.BASE_PAINTS[k].name);
-      const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}` : names[0];
-      showToast(`${names.length > 1 ? 'Novas cores' : 'Nova cor'} na paleta: ${list.toUpperCase()}! Desafio: ${t.name}`, 'good', 3.4);
-      Voice.say(`${names.length > 1 ? 'Novas cores' : 'Nova cor'}! ${list}!`, 0.3);
+      const many = newPaints.length > 1;
+      const list = I18N.list(newPaints.map(k => I18N.paint(k)));
+      showToast(T(many ? 'newPaints' : 'newPaint', { list: list.toLocaleUpperCase(), color: tName }), 'good', 3.4);
+      Voice.say(T(many ? 'sayNewPaints' : 'sayNewPaint', { list }), 0.3);
       Sfx.pop();
     } else if (announce) {
-      showToast(`Novo desafio: ${t.name}!`, 'good', 2.2);
+      showToast(T('newChallenge', { color: tName }), 'good', 2.2);
       Sfx.pop();
     }
   }
@@ -593,16 +682,38 @@
     if (state.celebrating || state.ended) return;
     clearPot();
     ui.btnRestart.classList.remove('attention');
-    showToast('Pote limpinho! Vamos de novo.', 'good', 2);
+    showToast(T('cleanPot'), 'good', 2);
     Sfx.pop();
+  }
+
+  /** Botão ⏭: pula o desafio atual e vai para o próximo. */
+  function skipChallenge() {
+    if (state.celebrating || state.ended || state.paused) return;
+    ui.btnRestart.classList.remove('attention');
+    state.level += 1;
+    if (state.level >= M.TARGETS.length) { clearPot(); showEnd(); return; }
+    startLevel(false);
+    showToast(T('skipped'), 'good', 1.8);
+    Sfx.pop();
+  }
+
+  /** Nome da cor-alvo no cartaz (nomes compridos usam fonte menor). */
+  function refreshTargetName() {
+    const name = colorName(M.TARGETS[Math.min(state.level, M.TARGETS.length - 1)]);
+    ui.name.textContent = name;
+    ui.name.classList.toggle('long', name.length > 7);
+  }
+
+  function renderEndSwatches() {
+    ui.endSwatches.innerHTML = M.TARGETS.map(t =>
+      `<div><b style="background:${M.toCss(t.rgb)}"></b>${colorName(t)}</div>`).join('');
   }
 
   function showEnd() {
     state.ended = true;
-    ui.endSwatches.innerHTML = M.TARGETS.map(t =>
-      `<div><b style="background:${M.toCss(t.rgb)}"></b>${t.name}</div>`).join('');
+    renderEndSwatches();
     ui.endOv.classList.add('show');
-    Voice.say('Parabéns! Você fez todas as cores!', 0.2);
+    Voice.say(T('sayEnd'), 0.2);
   }
 
   function startGame() {
@@ -788,16 +899,16 @@
   function updateHud() {
     // Instrução curta que muda conforme o que a criança deve fazer agora
     let text;
-    if (state.celebrating) text = 'Uau! Cor perfeita!';
-    else if (state.brushLoad) text = `Leve o ${M.BASE_PAINTS[state.brushLoad].name} até o pote!`;
+    if (state.celebrating) text = T('instCelebrate');
+    else if (state.brushLoad) text = T('instCarry', { paint: I18N.paint(state.brushLoad) });
     else if (state.drops >= 2 && state.mixed < 1) {
-      if (state.autoMixing) text = 'Misturando a tinta...';
-      else text = settings.easyMix ? 'Toque no pote para misturar!' : 'Mexa o pincel no pote para misturar!';
+      if (state.autoMixing) text = T('instMixing');
+      else text = settings.easyMix ? T('instTapPot') : T('instStir');
     }
-    else if (state.drops === 1) text = 'Agora pegue outra cor!';
-    else if (state.drops === 0) text = 'Pegue uma cor, leve ao pote e gire para misturar';
-    else if (state.lastHint === 'wrong') text = 'Toque em ↺ para limpar o pote';
-    else text = 'Adicione mais tinta e misture de novo!';
+    else if (state.drops === 1) text = T('instAnother');
+    else if (state.drops === 0) text = T('instStart');
+    else if (state.lastHint === 'wrong') text = T('instClean');
+    else text = T('instMore');
     setInstruction(text);
 
     const progress = state.drops >= 2 ? state.mixed : 0;
@@ -807,34 +918,143 @@
     ui.miniMix.style.background = state.drops > 0 ? M.toCss(base) : '#ffffff';
   }
 
-  // Botões
-  function setPaused(p) {
+  // =================================================================
+  // Telas por cima do jogo (pausa, ajuda, tema, anúncios)
+  // Enquanto qualquer uma está aberta o jogo fica pausado.
+  // =================================================================
+  const OVERLAYS = [ui.pauseOv, ui.helpOv, ui.themeOv, ui.adsOv];
+  function openOverlay(ov) {
     if (state.ended) return;
-    state.paused = p;
+    OVERLAYS.forEach(o => o.classList.toggle('show', o === ov));
+    state.paused = true;
     pointer.down = false;
     unlockPuddles();
-    if (p) Voice.stop();
-    ui.pauseOv.classList.toggle('show', p);
+    Voice.stop();
   }
-  // Botão do modo fácil (fica na tela de pausa)
-  const btnEasy = document.getElementById('btn-easy');
-  function refreshEasyButton() {
-    btnEasy.textContent = `Mistura automática: ${settings.easyMix ? 'LIGADA' : 'DESLIGADA'}`;
-    btnEasy.classList.toggle('on', settings.easyMix);
+  function closeOverlays() {
+    OVERLAYS.forEach(o => o.classList.remove('show'));
+    state.paused = false;
   }
-  btnEasy.addEventListener('click', () => {
+  function setPaused(p) {
+    if (state.ended) return;
+    if (p) openOverlay(ui.pauseOv); else closeOverlays();
+  }
+  // Botões "Fechar"/"Entendi" e toque fora do painel fecham as telas de ajuda/tema/anúncios
+  document.querySelectorAll('.overlay.closable').forEach(ov => {
+    ov.addEventListener('click', e => { if (e.target === ov || e.target.hasAttribute('data-close')) closeOverlays(); });
+  });
+
+  // ---------- Configurações: liga/desliga ----------
+  function refreshToggles() {
+    [[ui.btnMusic, settings.music], [ui.btnVoice, settings.voice], [ui.btnEasy, settings.easyMix]].forEach(([b, on]) => {
+      b.textContent = `${T(b.dataset.key)}: ${on ? T('on') : T('off')}`;
+      b.classList.toggle('on', on);
+    });
+  }
+  ui.btnMusic.addEventListener('click', () => {
+    settings.music = !settings.music;
+    if (settings.music) Music.start(); else Music.stop();
+    saveSettings(); refreshToggles();
+  });
+  ui.btnVoice.addEventListener('click', () => {
+    settings.voice = !settings.voice;
+    if (!settings.voice) Voice.stop();
+    saveSettings(); refreshToggles();
+  });
+  ui.btnEasy.addEventListener('click', () => {
     settings.easyMix = !settings.easyMix;
     if (!settings.easyMix) state.autoMixing = false;
-    try { localStorage.setItem('mistura.autoMix', settings.easyMix ? '1' : '0'); } catch (_) { /* ok */ }
-    refreshEasyButton();
+    saveSettings(); refreshToggles();
   });
-  refreshEasyButton();
 
+  // ---------- Idioma ----------
+  function renderLangPicker() {
+    ui.langPicker.innerHTML = Object.keys(I18N.LANGS).map(k =>
+      `<button data-lang="${k}" class="${k === I18N.lang ? 'on' : ''}">${I18N.LANGS[k].label}</button>`).join('');
+  }
+  ui.langPicker.addEventListener('click', e => {
+    const b = e.target.closest('button[data-lang]');
+    if (b) I18N.set(b.dataset.lang);
+  });
+  I18N.onChange(() => {
+    renderLangPicker();
+    renderThemePicker();
+    refreshToggles();
+    refreshTargetName();
+    renderEndSwatches();
+    lastInstruction = '';
+    Voice.voice = null;
+    Voice.pickVoice();
+    resize(); // textos de tamanhos diferentes mudam a altura do HUD
+  });
+
+  // ---------- Temas: cores do HUD + fundo + mesa ----------
+  // ui: [principal, escura, mais escura, clara]; bg = fundo/neblina; table = [madeira, veios]
+  const THEMES = {
+    classic: { ui: ['#8b3fd9', '#5a1a99', '#3f0f72', '#a259ec'], bg: 0xf1d2a6, table: ['#c98d55', '#7a4a22'] },
+    ocean:   { ui: ['#1e88e5', '#0d5aa7', '#083f78', '#4fa8f0'], bg: 0xcfe9f7, table: ['#8cc3dc', '#3d7a9c'] },
+    forest:  { ui: ['#2e9e4f', '#1d7136', '#124d24', '#57c174'], bg: 0xdcefc4, table: ['#a3c27a', '#567a32'] },
+    candy:   { ui: ['#e0428a', '#a82163', '#7a1446', '#f06ea8'], bg: 0xfde0ea, table: ['#f2b8c8', '#c76a8a'] },
+    night:   { ui: ['#7c4dff', '#5530c9', '#3a1f92', '#9e7bff'], bg: 0x2b2445, table: ['#5a4b7e', '#2f2550'] },
+  };
+  function applyTheme(id) {
+    const th = THEMES[id] || THEMES.classic;
+    settings.theme = THEMES[id] ? id : 'classic';
+    const st = document.documentElement.style;
+    ['--purple', '--purple-d', '--purple-dd', '--purple-l'].forEach((v, i) => st.setProperty(v, th.ui[i]));
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', th.ui[0]);
+    document.body.style.background = `#${th.bg.toString(16).padStart(6, '0')}`;
+    scene.background.setHex(th.bg);
+    scene.fog.color.setHex(th.bg);
+    W.setTableColors(world.table, th.table[0], th.table[1]);
+  }
+  function renderThemePicker() {
+    const names = T('themes');
+    ui.themePicker.innerHTML = Object.keys(THEMES).map(id => {
+      const th = THEMES[id];
+      return `<button data-theme="${id}" class="${id === settings.theme ? 'on' : ''}">` +
+        `<span class="sw" style="background:linear-gradient(135deg, #${th.bg.toString(16).padStart(6, '0')} 0 45%, ${th.table[0]} 45%)">` +
+        `<b style="background:${th.ui[0]}"></b></span>${names[id]}</button>`;
+    }).join('');
+  }
+  ui.themePicker.addEventListener('click', e => {
+    const b = e.target.closest('button[data-theme]');
+    if (!b) return;
+    applyTheme(b.dataset.theme);
+    saveSettings();
+    renderThemePicker();
+    Sfx.pop();
+  });
+
+  // ---------- Sem anúncios ----------
+  // O jogo ainda não tem anúncios nem loja. Quando a compra existir,
+  // chame MixGame.setNoAds(true) ao confirmar o pagamento: o botão some.
+  function setNoAds(v) {
+    settings.noAds = !!v;
+    ui.btnNoAds.hidden = settings.noAds;
+    saveSettings();
+  }
+
+  // ---------- Botões do HUD ----------
   ui.btnPause.addEventListener('click', () => setPaused(true));
   ui.btnResume.addEventListener('click', () => setPaused(false));
   ui.btnRestart.addEventListener('click', restartRound);
+  ui.btnSkip.addEventListener('click', skipChallenge);
+  ui.btnHelp.addEventListener('click', () => openOverlay(ui.helpOv));
+  ui.btnTheme.addEventListener('click', () => { renderThemePicker(); openOverlay(ui.themeOv); });
+  ui.btnNoAds.addEventListener('click', () => openOverlay(ui.adsOv));
   ui.btnReplay.addEventListener('click', startGame);
-  document.addEventListener('visibilitychange', () => { if (document.hidden && !state.ended) setPaused(true); });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) return;
+    Music.stop(); // volta no próximo toque
+    if (!state.ended && !state.paused) setPaused(true);
+  });
+
+  I18N.apply();
+  renderLangPicker();
+  refreshToggles();
+  applyTheme(settings.theme);
+  ui.btnNoAds.hidden = settings.noAds;
 
   // =================================================================
   // Laço principal
@@ -868,6 +1088,7 @@
     state, camera, world, update,
     render: () => renderer.render(scene, camera),
     goToLevel: i => { state.level = i; state.celebrating = false; startLevel(false); },
+    setNoAds, applyTheme, settings,
   };
 
   window.addEventListener('resize', resize);

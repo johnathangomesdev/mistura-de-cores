@@ -119,34 +119,34 @@
   // mistura, então a meta é sempre alcançável com as tintas da fase.
   const TARGETS = [
     // Fase 1 — vermelho, amarelo, azul
-    { stage: 0, name: 'ROXO',         recipe: { r: 1, b: 1 } },
-    { stage: 0, name: 'LARANJA',      recipe: { r: 1, y: 1 } },
-    { stage: 0, name: 'VERDE',        recipe: { y: 1, b: 1 } },
-    { stage: 0, name: 'MARROM',       recipe: { r: 1, y: 1, b: 1 } },
-    { stage: 0, name: 'VERDE-LIMÃO',  recipe: { y: 2, b: 1 } },
-    { stage: 0, name: 'TURQUESA',     recipe: { y: 1, b: 2 } },
-    { stage: 0, name: 'MAGENTA',      recipe: { r: 2, b: 1 } },
+    { stage: 0, id: 'purple', name: 'ROXO',         recipe: { r: 1, b: 1 } },
+    { stage: 0, id: 'orange', name: 'LARANJA',      recipe: { r: 1, y: 1 } },
+    { stage: 0, id: 'green', name: 'VERDE',        recipe: { y: 1, b: 1 } },
+    { stage: 0, id: 'brown', name: 'MARROM',       recipe: { r: 1, y: 1, b: 1 } },
+    { stage: 0, id: 'lime', name: 'VERDE-LIMÃO',  recipe: { y: 2, b: 1 } },
+    { stage: 0, id: 'turquoise', name: 'TURQUESA',     recipe: { y: 1, b: 2 } },
+    { stage: 0, id: 'magenta', name: 'MAGENTA',      recipe: { r: 2, b: 1 } },
     // Fase 2 — + branco
-    { stage: 1, name: 'ROSA',         recipe: { r: 1, w: 1 } },
-    { stage: 1, name: 'AZUL-CLARO',   recipe: { b: 1, w: 1 } },
-    { stage: 1, name: 'LILÁS',        recipe: { r: 1, b: 1, w: 1 } },
-    { stage: 1, name: 'PÊSSEGO',      recipe: { r: 1, y: 1, w: 1 } },
-    { stage: 1, name: 'CREME',        recipe: { y: 1, w: 2 } },
-    { stage: 1, name: 'CORAL',        recipe: { r: 2, y: 1, w: 1 } },
+    { stage: 1, id: 'pink', name: 'ROSA',         recipe: { r: 1, w: 1 } },
+    { stage: 1, id: 'lightBlue', name: 'AZUL-CLARO',   recipe: { b: 1, w: 1 } },
+    { stage: 1, id: 'lilac', name: 'LILÁS',        recipe: { r: 1, b: 1, w: 1 } },
+    { stage: 1, id: 'peach', name: 'PÊSSEGO',      recipe: { r: 1, y: 1, w: 1 } },
+    { stage: 1, id: 'cream', name: 'CREME',        recipe: { y: 1, w: 2 } },
+    { stage: 1, id: 'coral', name: 'CORAL',        recipe: { r: 2, y: 1, w: 1 } },
     // Fase 3 — + preto
-    { stage: 2, name: 'CINZA',        recipe: { w: 1, k: 1 } },
-    { stage: 2, name: 'AZUL-ESCURO',  recipe: { b: 2, k: 1 } },
-    { stage: 2, name: 'VERDE-ESCURO', recipe: { y: 1, b: 1, k: 1 } },
-    { stage: 2, name: 'VINHO',        recipe: { r: 3, b: 1, k: 1 } },
-    { stage: 2, name: 'CINZA-CLARO',  recipe: { w: 2, k: 1 } },
-    { stage: 2, name: 'ANIL',         recipe: { r: 1, b: 2 } },
+    { stage: 2, id: 'gray', name: 'CINZA',        recipe: { w: 1, k: 1 } },
+    { stage: 2, id: 'darkBlue', name: 'AZUL-ESCURO',  recipe: { b: 2, k: 1 } },
+    { stage: 2, id: 'darkGreen', name: 'VERDE-ESCURO', recipe: { y: 1, b: 1, k: 1 } },
+    { stage: 2, id: 'wine', name: 'VINHO',        recipe: { r: 3, b: 1, k: 1 } },
+    { stage: 2, id: 'lightGray', name: 'CINZA-CLARO',  recipe: { w: 2, k: 1 } },
+    { stage: 2, id: 'indigo', name: 'ANIL',         recipe: { r: 1, b: 2 } },
     // Fase 4 — + verde
-    { stage: 3, name: 'VERDE-ÁGUA',   recipe: { g: 1, w: 1 } },
-    { stage: 3, name: 'TIJOLO',       recipe: { r: 2, y: 1, b: 1 } },
-    { stage: 3, name: 'MOSTARDA',     recipe: { r: 1, y: 2, b: 1 } },
-    { stage: 3, name: 'AMEIXA',       recipe: { r: 2, y: 1, b: 2 } },
-    { stage: 3, name: 'AZUL-JEANS',   recipe: { r: 1, y: 1, b: 3 } },
-    { stage: 3, name: 'BEGE',         recipe: { r: 1, y: 2, b: 1, w: 2 } },
+    { stage: 3, id: 'aqua', name: 'VERDE-ÁGUA',   recipe: { g: 1, w: 1 } },
+    { stage: 3, id: 'brick', name: 'TIJOLO',       recipe: { r: 2, y: 1, b: 1 } },
+    { stage: 3, id: 'mustard', name: 'MOSTARDA',     recipe: { r: 1, y: 2, b: 1 } },
+    { stage: 3, id: 'plum', name: 'AMEIXA',       recipe: { r: 2, y: 1, b: 2 } },
+    { stage: 3, id: 'denim', name: 'AZUL-JEANS',   recipe: { r: 1, y: 1, b: 3 } },
+    { stage: 3, id: 'beige', name: 'BEGE',         recipe: { r: 1, y: 2, b: 1, w: 2 } },
   ].map(t => {
     t.recipe = Object.assign(emptyUnits(), t.recipe);
     t.rgb = mixAmounts(t.recipe);
@@ -161,16 +161,16 @@
 
   /**
    * Compara a mistura do pote com a meta.
-   * Retorna { match, distance, hint } — a dica é gentil e diz o que fazer.
+   * Retorna { match, distance, hint } — a dica diz o que fazer:
+   * { type: 'empty' | 'wrong' | 'more', key } (o texto vem do i18n.js).
    * As dicas comparam PIGMENTOS (o verde conta como amarelo + azul).
    */
   function evaluate(units, target) {
     const rgb = mixAmounts(units);
-    if (!rgb) return { match: false, distance: Infinity, hint: { type: 'empty', text: 'O pote está vazio. Pegue uma cor!' } };
+    if (!rgb) return { match: false, distance: Infinity, hint: { type: 'empty' } };
     const d = distance(rgb, target.rgb);
     if (d <= MATCH_TOLERANCE) return { match: true, distance: d, hint: null };
 
-    const targetName = target.name.toLowerCase();
     const have = toPigments(units);
     const want = toPigments(target.recipe);
 
@@ -179,10 +179,7 @@
     if (extra) {
       // Diz o nome da tinta que a criança realmente usou (pode ter sido o verde)
       const used = units[extra] > 0 ? extra : 'g';
-      return {
-        match: false, distance: d,
-        hint: { type: 'wrong', key: used, text: `Ops! O ${BASE_PAINTS[used].name} não faz parte do ${targetName}. Toque em ↺ para limpar o pote.` },
-      };
+      return { match: false, distance: d, hint: { type: 'wrong', key: used } };
     }
     // 2) Qual pigmento da receita está mais em falta?
     const total = PIGMENTS.reduce((s, k) => s + have[k], 0);
@@ -192,11 +189,7 @@
       const gap = want[k] / tTotal - have[k] / total;
       if (gap > bestGap) { bestGap = gap; best = k; }
     }
-    const name = best ? BASE_PAINTS[best].name : 'tinta';
-    return {
-      match: false, distance: d,
-      hint: { type: 'more', key: best, text: `Quase! Coloque mais ${name} e misture de novo.` },
-    };
+    return { match: false, distance: d, hint: { type: 'more', key: best || 'r' } };
   }
 
   global.MixLogic = {

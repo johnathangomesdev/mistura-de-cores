@@ -38,12 +38,34 @@ Alternativa com Node: `npx serve .`
 - Com a mistura completa, o jogo compara com a meta: acertou → confete e próximo desafio;
   errou → uma dica (ex.: "Coloque mais azul"). Use ↺ para esvaziar o pote e ⏸ para pausar.
 
+## Botões do HUD
+
+| Botão | O que faz |
+|---|---|
+| ⏸ Pausa | Pausa e abre as **configurações**: idioma, música, voz e mistura automática |
+| ↺ Recomeçar | Esvazia o pote |
+| ⏭ Pular | Pula o desafio atual |
+| ? Ajuda | Mostra como jogar |
+| 🎨 Tema | Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa) |
+| AD riscado | "Sem anúncios": por enquanto só mostra "Em breve" (o jogo ainda não tem anúncios nem loja). Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
+
+As escolhas ficam salvas no aparelho (`localStorage`: `mistura.settings`, `mistura.lang`).
+A música é um loop gerado por código (WebAudio), sem arquivos.
+
+## Idiomas
+
+Português, English e Español, em `js/i18n.js`. O idioma inicial segue o do aparelho.
+Para adicionar um idioma: copie o bloco `en` de `STRINGS`, traduza e acrescente a tradução de cada cor
+em `COLORS` e `PAINTS` (as cores-alvo são identificadas pelo `id` em `TARGETS`). A voz que fala a cor usa
+a voz do navegador no idioma escolhido. No HTML, textos fixos usam `data-i18n="chave"`.
+
 ## Arquivos
 
 | Arquivo | O que faz |
 |---|---|
 | `index.html` | Página, HUD (meta, contador, instrução, barra) e telas de pausa/fim |
 | `css/style.css` | Visual da interface, adaptada para celular em pé |
+| `js/i18n.js` | Textos em vários idiomas e nomes das cores |
 | `js/colors.js` | Mistura de cores no modelo RYB, desafios e comparação com a meta |
 | `js/scene.js` | Cenário 3D só com geometrias Three.js: mesa, paleta, tintas, pote, pincel, mascote, efeitos |
 | `js/game.js` | Toque/mouse, regras (pegar, despejar, girar), detecção de giro, vitória, HUD e laço principal |

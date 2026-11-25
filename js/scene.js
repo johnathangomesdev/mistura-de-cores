@@ -96,6 +96,16 @@
     mesh.position.y = -0.001;
     mesh.receiveShadow = true;
     scene.add(mesh);
+    return mesh;
+  }
+
+  /** Troca as cores da mesa (temas): madeira base + cor dos veios. */
+  function setTableColors(table, base, grain) {
+    const tex = woodTexture(base, grain, { planks: true, splats: true });
+    tex.repeat.set(4, 4);
+    if (table.material.map) table.material.map.dispose();
+    table.material.map = tex;
+    table.material.needsUpdate = true;
   }
 
   function buildLights(scene) {
@@ -565,7 +575,7 @@
 
   function build(scene) {
     buildLights(scene);
-    buildTable(scene);
+    const table = buildTable(scene);
     const palette = buildPalette(scene);
     // Cria as 6 poças; o jogo decide quais aparecem em cada fase
     const puddles = global.MixLogic.KEYS.map(key => {
@@ -579,8 +589,8 @@
     const brush = buildBrush(scene);
     const mascot = buildMascot(scene);
     const fx = buildEffects(scene);
-    return { palette, puddles, pot, brush, mascot, fx };
+    return { table, palette, puddles, pot, brush, mascot, fx };
   }
 
-  global.World = { build, getFitPoints, puddleSlots, potInnerRadius, PALETTE_TOP, LAYOUT };
+  global.World = { build, getFitPoints, puddleSlots, potInnerRadius, setTableColors, PALETTE_TOP, LAYOUT };
 })(window);

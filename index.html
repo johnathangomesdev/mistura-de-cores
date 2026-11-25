@@ -16,7 +16,7 @@
   <div id="splash">
     <img id="splash-logo" src="img/steamboat-logo.png" alt="Steamboat Studio">
     <div id="splash-bar"><div id="splash-fill"></div></div>
-    <div id="splash-text">Carregando…</div>
+    <div id="splash-text" data-i18n="loading">Carregando…</div>
   </div>
   <script>
     // Barra da tela de carregamento: avança sozinha e só completa quando a página terminou de carregar
@@ -47,12 +47,20 @@
   <!-- ===== HUD superior: botões, cor-alvo e contador de desafios ===== -->
   <div id="hud-top" class="hud">
     <div class="side left">
-      <button id="btn-pause" class="icon-btn" aria-label="Pausar">
-        <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.6"/><rect x="14" y="5" width="4" height="14" rx="1.6"/></svg>
-      </button>
-      <button id="btn-restart" class="icon-btn" aria-label="Recomeçar a rodada">
-        <svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 4.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M4.2 4.5v5.4h5.4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="btn-grid">
+        <button id="btn-pause" class="icon-btn" data-i18n-aria="aPause">
+          <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.6"/><rect x="14" y="5" width="4" height="14" rx="1.6"/></svg>
+        </button>
+        <button id="btn-restart" class="icon-btn" data-i18n-aria="aRestart">
+          <svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 4.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M4.2 4.5v5.4h5.4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="btn-skip" class="icon-btn" data-i18n-aria="aSkip">
+          <svg viewBox="0 0 24 24"><path d="M4.5 6.2v11.6c0 .8.9 1.3 1.6.8l7.6-5.8c.5-.4.5-1.2 0-1.6L6.1 5.4c-.7-.5-1.6 0-1.6.8z"/><rect x="15.5" y="5.5" width="3.6" height="13" rx="1.5"/></svg>
+        </button>
+        <button id="btn-help" class="icon-btn" data-i18n-aria="aHelp">
+          <svg viewBox="0 0 24 24"><path d="M8.6 9.2a3.5 3.5 0 1 1 5.2 3c-1.1.7-1.8 1.3-1.8 2.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.8"/></svg>
+        </button>
+      </div>
     </div>
 
     <div id="target-card">
@@ -61,7 +69,15 @@
     </div>
 
     <div class="side right">
-      <div id="badge"><span>DESAFIO</span><strong id="challenge-count">1/4</strong></div>
+      <div id="badge"><span data-i18n="challenge">DESAFIO</span><strong id="challenge-count">1/4</strong></div>
+      <div class="btn-row">
+        <button id="btn-theme" class="icon-btn" data-i18n-aria="aTheme">
+          <svg viewBox="0 0 24 24"><path d="M12 2.8C6.6 2.8 2.5 6.8 2.5 11.8c0 5 4 9.2 9 9.2 1.3 0 2.2-.9 2.2-2 0-.6-.2-1-.5-1.4-.3-.4-.5-.8-.5-1.3 0-1 .9-1.9 2-1.9h2.3c2.9 0 5.2-2.3 5.2-5.1 0-4.3-4.4-6.5-9.7-6.5z"/><circle cx="7.4" cy="11.6" r="1.6" class="hole"/><circle cx="10" cy="7.4" r="1.6" class="hole"/><circle cx="14.8" cy="7.2" r="1.6" class="hole"/><circle cx="17.9" cy="10.6" r="1.6" class="hole"/></svg>
+        </button>
+        <button id="btn-noads" class="icon-btn" data-i18n-aria="aNoAds">
+          <svg viewBox="0 0 24 24"><text x="12" y="16.2" text-anchor="middle" font-size="10.5" font-weight="700" font-family="Fredoka, system-ui, sans-serif">AD</text><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M5.6 18.4 18.4 5.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -72,7 +88,7 @@
     <div id="progress-panel">
       <div class="mini-palette"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4" id="mini-mix"></i></div>
       <div class="progress-body">
-        <div class="ptitle">PROGRESSO DA MISTURA</div>
+        <div class="ptitle" data-i18n="mixProgress">PROGRESSO DA MISTURA</div>
         <div class="bar"><div id="progress-fill"></div></div>
       </div>
     </div>
@@ -81,21 +97,66 @@
   <div id="win-banner">Muito bem!</div>
 
   <!-- ===== Telas de pausa e de fim ===== -->
+  <!-- Pausa + configurações -->
   <div id="pause-overlay" class="overlay">
     <div class="panel">
-      <h2>Pausado</h2>
-      <button id="btn-resume" class="big-btn">Continuar</button>
-      <button id="btn-easy" class="toggle-btn">Mistura automática: DESLIGADA</button>
-      <p class="small">Desligada: mexa o pincel de qualquer jeito dentro do pote.<br>Ligada: basta encostar o pincel no pote.</p>
+      <h2 data-i18n="paused">Pausado</h2>
+      <button id="btn-resume" class="big-btn" data-i18n="resume">Continuar</button>
+      <div class="settings">
+        <h3 data-i18n="settings">Configurações</h3>
+        <div class="set-label" data-i18n="language">Idioma</div>
+        <div id="lang-picker" class="seg"></div>
+        <div class="set-row">
+          <button id="btn-music" class="toggle-btn" data-key="music"></button>
+          <button id="btn-voice" class="toggle-btn" data-key="voice"></button>
+        </div>
+        <button id="btn-easy" class="toggle-btn" data-key="autoMix"></button>
+        <p class="small" data-i18n-html="autoMixHelp"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ajuda -->
+  <div id="help-overlay" class="overlay closable">
+    <div class="panel">
+      <h2 data-i18n="helpTitle">Como jogar</h2>
+      <ol class="help-steps">
+        <li><i style="background:#ee2126"></i><span data-i18n="help1"></span></li>
+        <li><i style="background:#fff">🖌️</i><span data-i18n="help2"></span></li>
+        <li><i style="background:#2166e6"></i><span data-i18n="help3"></span></li>
+        <li><i style="background:#ffd81a">🌀</i><span data-i18n="help4"></span></li>
+        <li><i class="ico">↺</i><span data-i18n="help5"></span></li>
+        <li><i class="ico">⏭</i><span data-i18n="help6"></span></li>
+      </ol>
+      <button class="big-btn" data-close data-i18n="gotIt">Entendi!</button>
+    </div>
+  </div>
+
+  <!-- Temas -->
+  <div id="theme-overlay" class="overlay closable">
+    <div class="panel">
+      <h2 data-i18n="themeTitle">Escolha o tema</h2>
+      <div id="theme-picker"></div>
+      <button class="big-btn" data-close data-i18n="close">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Remover anúncios (compra ainda não implementada) -->
+  <div id="ads-overlay" class="overlay closable">
+    <div class="panel">
+      <h2 data-i18n="adsTitle">Sem anúncios</h2>
+      <p data-i18n="adsText"></p>
+      <button id="btn-buy-noads" class="big-btn" disabled data-i18n="adsSoon">Em breve</button>
+      <button class="toggle-btn" data-close data-i18n="close">Fechar</button>
     </div>
   </div>
 
   <div id="end-overlay" class="overlay">
     <div class="panel">
-      <h2>Parabéns!</h2>
-      <p>Você fez todas as cores!</p>
+      <h2 data-i18n="congrats">Parabéns!</h2>
+      <p data-i18n="allColors">Você fez todas as cores!</p>
       <div id="end-swatches"></div>
-      <button id="btn-replay" class="big-btn">Jogar de novo</button>
+      <button id="btn-replay" class="big-btn" data-i18n="playAgain">Jogar de novo</button>
     </div>
   </div>
 
@@ -105,6 +166,7 @@
     window.THREE || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
   </script>
   <!-- Código do jogo (scripts comuns, sem módulos: abre direto com duplo clique) -->
+  <script src="js/i18n.js"></script>
   <script src="js/colors.js"></script>
   <script src="js/scene.js"></script>
   <script src="js/game.js"></script>
