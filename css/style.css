@@ -460,3 +460,17 @@ html, body {
   .vol-row .mute { width: 40px; height: 40px; font-size: 19px; }
   .vol-label { font-size: 14px; }
 }
+
+/* Botão "Toque para jogar" do splash (libera som e voz) */
+#splash-play {
+  display: none; align-items: center; gap: 12px; cursor: pointer;
+  font-family: var(--font); font-weight: 700; font-size: 24px; color: #fff;
+  background: #2bb34a; border: none; border-radius: 22px; padding: 10px 28px 10px 14px;
+  box-shadow: 0 6px 0 #1a7f31, 0 10px 20px rgba(0, 0, 0, .18);
+  animation: splash-in .5s cubic-bezier(.2, 1.4, .4, 1) both, play-pulse 1.4s ease-in-out .6s infinite;
+}
+#splash-play img { width: 46px; height: 46px; object-fit: contain; }
+#splash-play:active { transform: translateY(4px); box-shadow: 0 2px 0 #1a7f31; }
+#splash.ready #splash-bar, #splash.ready #splash-text { display: none; }
+#splash.ready #splash-play { display: inline-flex; }
+@keyframes play-pulse { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }

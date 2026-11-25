@@ -26,12 +26,19 @@
     <img id="splash-logo" src="img/steamboat-logo.png" alt="Steamboat Studio">
     <div id="splash-bar"><div id="splash-fill"></div></div>
     <div id="splash-text" data-i18n="loading">Carregando…</div>
+    <!-- Aparece quando termina de carregar. O toque libera som e voz (regra dos navegadores:
+         nada toca antes do primeiro toque do usuário). O game.js liga a música nesse clique. -->
+    <button id="splash-play" type="button">
+      <img src="img/ui/play.png" alt=""><span data-i18n="tapToPlay">Toque para jogar</span>
+    </button>
   </div>
   <script>
-    // Barra da tela de carregamento: avança sozinha e só completa quando a página terminou de carregar
+    // Barra da tela de carregamento: avança sozinha e só completa quando a página terminou de carregar.
+    // Depois mostra o botão Jogar; o splash some no toque.
     (function () {
       var MIN_MS = 2600, t0 = Date.now(), loaded = false, shown = 0;
-      var fill = document.getElementById('splash-fill');
+      var s = document.getElementById('splash'), fill = document.getElementById('splash-fill');
+      var play = document.getElementById('splash-play');
       window.addEventListener('load', function () { loaded = true; });
       function tick() {
         var t = Math.min(1, (Date.now() - t0) / MIN_MS);
@@ -40,12 +47,12 @@
         if (goal === 1 && shown > 0.995) shown = 1;
         fill.style.width = (shown * 100).toFixed(1) + '%';
         if (shown < 1) return requestAnimationFrame(tick);
-        setTimeout(function () {
-          var s = document.getElementById('splash');
-          s.classList.add('hide');
-          setTimeout(function () { s.remove(); window.dispatchEvent(new Event('splashdone')); }, 600);
-        }, 250);
+        setTimeout(function () { s.classList.add('ready'); play.focus(); }, 200);
       }
+      play.addEventListener('click', function () {
+        s.classList.add('hide');
+        setTimeout(function () { s.remove(); window.dispatchEvent(new Event('splashdone')); }, 600);
+      });
       requestAnimationFrame(tick);
     })();
   </script>

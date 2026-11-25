@@ -255,13 +255,25 @@
                    pool.find(v => female.test(v.name)) || pool[0] || null;
     },
     volume() { return settings.voiceVol; },
-    /** Navegadores de celular só liberam a fala depois de um toque. */
+    /**
+     * Navegadores só liberam a fala dentro de um toque "de verdade"
+     * (click/touchend/pointerup/tecla). Fala um texto mudo nesse momento;
+     * só marca como liberado se essa fala começar (senão tenta no próximo toque).
+     */
     unlock() {
-      if (!this.supported || this.unlocked) return;
-      this.unlocked = true;
+      if (!this.supported || this.unlocked || this.unlocking) return;
+      this.unlocking = true;
       this.pickVoice();
       const u = new SpeechSynthesisUtterance('.');
       u.volume = 0;
+      u.lang = I18N.voiceLang();
+      const ok = () => { this.unlocked = true; this.unlocking = false; };
+      u.onstart = ok;
+      u.onend = ok;
+      // interrompida por outra fala = foi aceita; "not-allowed" = ainda bloqueada
+      u.onerror = e => { if (e.error === 'interrupted' || e.error === 'canceled') ok(); else this.unlocking = false; };
+      setTimeout(() => { this.unlocking = false; }, 1500);
+      this.ss.resume();
       this.ss.speak(u);
     },
     /** force = fala mesmo com o jogo pausado (prévia do volume nas configurações). */
@@ -325,12 +337,27 @@
     return T(hint.type === 'wrong' ? 'hintWrong' : 'hintMore', p);
   }
 
-  // Navegadores só liberam som/voz depois de um toque: qualquer toque na tela serve
-  document.addEventListener('pointerdown', () => {
+  // Navegadores só liberam som/voz dentro de um toque "de verdade". No celular,
+  // encostar o dedo (pointerdown) ainda NÃO conta: só soltar (pointerup/touchend/click).
+  // Por isso tentamos em todos esses eventos; a música começa quando o áudio
+  // realmente destrava. O primeiro toque costuma ser o botão "Toque para jogar".
+  function unlockAudio() {
     Sfx.unlock();
     Voice.unlock();
-    Music.start();
-  }, true);
+    const ctx = Sfx.ctx;
+    if (!ctx) return;
+    if (ctx.state === 'running') Music.start();
+    else ctx.resume().then(() => Music.start()).catch(() => { /* tenta no próximo toque */ });
+  }
+  ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach(ev =>
+    document.addEventListener(ev, unlockAudio, true));
+
+  // Botão "Toque para jogar" do splash: libera o som e a criança ouve a primeira cor
+  const splashPlay = document.getElementById('splash-play');
+  if (splashPlay) splashPlay.addEventListener('click', () => {
+    const t = M.TARGETS[state.level];
+    Voice.say(T('sayStart', { color: spokenName(colorName(t)) }), 0.5);
+  });
 
   // =================================================================
   // Câmera: enquadra a paleta no espaço livre entre os HUDs
@@ -398,8 +425,6 @@
   }
   canvas.addEventListener('pointerdown', e => {
     if (state.paused || state.ended) return;
-    Sfx.unlock();
-    Voice.unlock();
     pointer.down = true;
     pointer.active = true;
     pointer.id = e.pointerId;

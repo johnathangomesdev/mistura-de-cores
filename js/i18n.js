@@ -18,7 +18,7 @@
 
   const STRINGS = {
     pt: {
-      title: 'Mistura de Cores', loading: 'Carregando…',
+      title: 'Mistura de Cores', loading: 'Carregando…', tapToPlay: 'Toque para jogar', sayStart: 'Vamos fazer {color}!',
       challenge: 'DESAFIO', mixProgress: 'PROGRESSO DA MISTURA',
       aPause: 'Pausar e configurações', aRestart: 'Recomeçar a rodada', aSkip: 'Pular desafio',
       aHelp: 'Ajuda', aTheme: 'Trocar tema', aNoAds: 'Remover anúncios', aHint: 'Dica',
@@ -60,7 +60,7 @@
       sayEnd: 'Parabéns! Você fez todas as cores!',
     },
     en: {
-      title: 'Color Mixing', loading: 'Loading…',
+      title: 'Color Mixing', loading: 'Loading…', tapToPlay: 'Tap to play', sayStart: 'Let\'s make {color}!',
       challenge: 'CHALLENGE', mixProgress: 'MIXING PROGRESS',
       aPause: 'Pause and settings', aRestart: 'Restart round', aSkip: 'Skip challenge',
       aHelp: 'Help', aTheme: 'Change theme', aNoAds: 'Remove ads', aHint: 'Hint',
@@ -102,7 +102,7 @@
       sayEnd: 'Congratulations! You made all the colors!',
     },
     es: {
-      title: 'Mezcla de Colores', loading: 'Cargando…',
+      title: 'Mezcla de Colores', loading: 'Cargando…', tapToPlay: 'Toca para jugar', sayStart: '¡Vamos a hacer {color}!',
       challenge: 'RETO', mixProgress: 'PROGRESO DE LA MEZCLA',
       aPause: 'Pausa y ajustes', aRestart: 'Reiniciar la ronda', aSkip: 'Saltar reto',
       aHelp: 'Ayuda', aTheme: 'Cambiar tema', aNoAds: 'Quitar anuncios', aHint: 'Pista',

@@ -57,6 +57,11 @@ As figuras dos botões ficam em `img/ui/` (recortadas da folha de ícones). O no
 por código, traduzido, numa plaquinha creme que só aparece em telas grandes. `play.png` é usado em
 Continuar/Jogar de novo; `ranking.png` e `palette.png` estão guardados (ainda sem botão).
 
+**Som e voz:** os navegadores não deixam nenhum som tocar antes do primeiro toque do usuário (e, no celular,
+encostar o dedo ainda não conta, só soltar). Por isso a tela de carregamento termina com o botão
+**"Toque para jogar"**: esse toque liga a música e a voz, que fala a primeira cor. O destravamento também é
+tentado em `pointerup`/`touchend`/`click`/tecla (`unlockAudio` em `game.js`).
+
 As escolhas ficam salvas no aparelho (`localStorage`: `mistura.settings`, `mistura.lang`).
 A música é um loop gerado por código (WebAudio), sem arquivos.
 
