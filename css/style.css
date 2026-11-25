@@ -52,7 +52,7 @@ html, body {
 .side.left { align-items: flex-start; }
 .side.right { align-items: flex-end; }
 .center { display: flex; flex-direction: column; align-items: center; }
-.center #badge { position: relative; z-index: 1; margin-bottom: -8px; }
+.center #badge { margin-bottom: 16px; } /* espaço para os ganchinhos do cartaz não encostarem no selo */
 
 .icon-btn {
   width: var(--btn, 46px); height: var(--btn, 46px);
