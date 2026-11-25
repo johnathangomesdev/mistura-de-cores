@@ -39,7 +39,10 @@
   // music / voice = liga-desliga, theme = tema visual, noAds = comprou "sem anúncios".
   // O idioma fica no i18n.js ('mistura.lang').
   const T = (k, p) => I18N.t(k, p);
-  const settings = { easyMix: false, music: true, voice: true, theme: 'classic', noAds: false };
+  // hints / skips = quantas dicas e pulos ainda restam (começam com START_HINTS / START_SKIPS).
+  const START_HINTS = 3;
+  const START_SKIPS = 3;
+  const settings = { easyMix: false, music: true, voice: true, theme: 'classic', noAds: false, hints: START_HINTS, skips: START_SKIPS };
   try {
     const saved = localStorage.getItem('mistura.autoMix');
     if (saved !== null) settings.easyMix = saved === '1';
@@ -62,7 +65,8 @@
     toast: $('toast'), banner: $('win-banner'),
     pauseOv: $('pause-overlay'), endOv: $('end-overlay'), endSwatches: $('end-swatches'),
     btnPause: $('btn-pause'), btnRestart: $('btn-restart'), btnResume: $('btn-resume'), btnReplay: $('btn-replay'),
-    btnSkip: $('btn-skip'), btnHelp: $('btn-help'), btnHint: $('btn-hint'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
+    btnSkip: $('btn-skip'), btnHelp: $('btn-help'), btnHint: $('btn-hint'),
+    hintCount: $('hint-count'), skipCount: $('skip-count'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
     helpOv: $('help-overlay'), themeOv: $('theme-overlay'), adsOv: $('ads-overlay'),
     btnMusic: $('btn-music'), btnVoice: $('btn-voice'), btnEasy: $('btn-easy'),
     langPicker: $('lang-picker'), themePicker: $('theme-picker'),
@@ -689,6 +693,10 @@
   /** Botão ⏭: pula o desafio atual e vai para o próximo. */
   function skipChallenge() {
     if (state.celebrating || state.ended || state.paused) return;
+    if (settings.skips <= 0) { showToast(T('noSkips'), 'warn', 2.2); Sfx.hmm(); return; }
+    settings.skips -= 1;
+    saveSettings();
+    refreshCounters(ui.btnSkip);
     ui.btnRestart.classList.remove('attention');
     state.level += 1;
     if (state.level >= M.TARGETS.length) { clearPot(); showEnd(); return; }
@@ -697,9 +705,20 @@
     Sfx.pop();
   }
 
-  /** Botão 💡 Dica: mostra (e fala) a receita da cor e faz as tintas certas pularem. */
+  /**
+   * Botão 💡 Dica: mostra (e fala) a receita da cor e faz as tintas certas pularem.
+   * Gasta 1 dica por desafio: pedir de novo na mesma cor é grátis.
+   */
+  let hintPaidLevel = -1;
   function showHint() {
     if (state.celebrating || state.ended || state.paused) return;
+    if (hintPaidLevel !== state.level) {
+      if (settings.hints <= 0) { showToast(T('noHints'), 'warn', 2.2); Sfx.hmm(); return; }
+      settings.hints -= 1;
+      hintPaidLevel = state.level;
+      saveSettings();
+      refreshCounters(ui.btnHint);
+    }
     const t = M.TARGETS[state.level];
     const keys = M.KEYS.filter(k => t.recipe[k] > 0);
     const part = k => (t.recipe[k] > 1 ? `${t.recipe[k]}× ` : '') + I18N.paint(k); // "2× amarelo"
@@ -708,6 +727,22 @@
     world.puddles.forEach(p => { if (keys.includes(p.userData.key)) p.userData.wobbleT = 0; });
     Sfx.pop();
   }
+
+  /** Atualiza os contadores de dicas/pulos (e deixa o botão cinza quando zera). */
+  function refreshCounters(bumped) {
+    [[ui.btnHint, ui.hintCount, settings.hints], [ui.btnSkip, ui.skipCount, settings.skips]].forEach(([btn, el, n]) => {
+      el.textContent = n;
+      btn.classList.toggle('empty', n <= 0);
+    });
+    if (bumped) {
+      bumped.classList.remove('bump-count');
+      void bumped.offsetWidth;
+      bumped.classList.add('bump-count');
+    }
+  }
+  /** Dá mais dicas/pulos (ex.: depois de um anúncio ou compra). */
+  function addHints(n) { settings.hints = Math.max(0, settings.hints + n); saveSettings(); refreshCounters(ui.btnHint); }
+  function addSkips(n) { settings.skips = Math.max(0, settings.skips + n); saveSettings(); refreshCounters(ui.btnSkip); }
 
   /** Nome da cor-alvo no cartaz (nomes compridos usam fonte menor). */
   function refreshTargetName() {
@@ -1068,6 +1103,7 @@
   refreshToggles();
   applyTheme(settings.theme);
   ui.btnNoAds.hidden = settings.noAds;
+  refreshCounters();
 
   // =================================================================
   // Laço principal
@@ -1101,7 +1137,7 @@
     state, camera, world, update,
     render: () => renderer.render(scene, camera),
     goToLevel: i => { state.level = i; state.celebrating = false; startLevel(false); },
-    setNoAds, applyTheme, settings,
+    setNoAds, applyTheme, settings, addHints, addSkips,
   };
 
   window.addEventListener('resize', resize);

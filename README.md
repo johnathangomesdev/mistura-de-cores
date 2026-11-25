@@ -44,8 +44,12 @@ Alternativa com Node: `npx serve .`
 |---|---|
 | ⚙️ Configurações | Pausa e abre: idioma, música, voz, mistura automática e "Como jogar" |
 | ↺ Limpar | Esvazia o pote |
-| ⏩ Pular Cor | Pula o desafio atual |
-| 💡 Dica | Mostra e fala a receita da cor (ex.: "misture 2× amarelo + azul") e faz as tintas certas pularem |
+| ⏩ Pular Cor | (embaixo, à direita) Pula o desafio atual. Gasta 1 pulo |
+| 💡 Dica | (embaixo, à esquerda) Mostra e fala a receita da cor (ex.: "misture 2× amarelo + azul") e faz as tintas certas pularem. Gasta 1 dica por cor (repetir na mesma cor é grátis) |
+
+Dicas e pulos têm um contador no canto do botão. Começam com `START_HINTS` / `START_SKIPS` (3) em `game.js`,
+ficam salvos no aparelho e, ao zerar, o botão fica cinza. Para dar mais (ex.: depois de um anúncio ou compra):
+`MixGame.addHints(n)` / `MixGame.addSkips(n)`.
 | 🖼️ Temas | Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa) |
 | 🚫 Retirar Ads | Por enquanto só mostra "Em breve" (o jogo ainda não tem anúncios nem loja). Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
 

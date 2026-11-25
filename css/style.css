@@ -406,3 +406,25 @@ html, body {
   #badge span { font-size: 11px; }
   #badge strong { font-size: 24px; }
 }
+
+/* Dica e Pular ao lado da instrução, embaixo da paleta */
+.bottom-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: min(640px, 100%); }
+.bottom-row #instruction { flex: 1 1 auto; min-width: 0; }
+.side-btn { --btn: 60px; position: relative; flex: 0 0 auto; }
+.side-btn .count {
+  position: absolute; top: -4px; right: -6px; min-width: 24px; height: 24px; padding: 0 5px;
+  border-radius: 999px; background: #ff4d6d; color: #fff; border: 3px solid #fff;
+  font: 700 14px/18px var(--font); text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+  pointer-events: none;
+}
+.side-btn.empty > img { filter: grayscale(1) opacity(.55); }
+.side-btn.empty .count { background: #9a8fa8; }
+.side-btn.bump-count .count { animation: bump .35s ease-out; }
+@media (max-width: 430px) {
+  .side-btn { --btn: 48px; }
+  .bottom-row { gap: 6px; }
+  .bottom-row #instruction { padding: 7px 12px; font-size: 15px; }
+}
+@media (min-width: 760px) and (min-height: 620px) {
+  .side-btn { --btn: 70px; }
+}

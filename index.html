@@ -64,12 +64,6 @@
         <button id="btn-restart" class="img-btn" data-i18n-aria="aRestart">
           <img src="img/ui/restart.png" alt=""><span class="plate" data-i18n="lblRestart"></span>
         </button>
-        <button id="btn-skip" class="img-btn" data-i18n-aria="aSkip">
-          <img src="img/ui/skip.png" alt=""><span class="plate" data-i18n="lblSkip"></span>
-        </button>
-        <button id="btn-hint" class="img-btn" data-i18n-aria="aHint">
-          <img src="img/ui/hint.png" alt=""><span class="plate" data-i18n="lblHint"></span>
-        </button>
       </div>
     </div>
 
@@ -94,7 +88,16 @@
   <!-- ===== HUD inferior: instrução e progresso da mistura ===== -->
   <div id="hud-bottom" class="hud">
     <div id="toast"></div>
-    <div id="instruction">Pegue uma cor, leve ao pote e gire para misturar</div>
+    <!-- Dica (esquerda) e Pular (direita), com contador de quantas restam -->
+    <div class="bottom-row">
+      <button id="btn-hint" class="img-btn side-btn" data-i18n-aria="aHint">
+        <img src="img/ui/hint.png" alt=""><b class="count" id="hint-count">3</b><span class="plate" data-i18n="lblHint"></span>
+      </button>
+      <div id="instruction">Pegue uma cor, leve ao pote e gire para misturar</div>
+      <button id="btn-skip" class="img-btn side-btn" data-i18n-aria="aSkip">
+        <img src="img/ui/skip.png" alt=""><b class="count" id="skip-count">3</b><span class="plate" data-i18n="lblSkip"></span>
+      </button>
+    </div>
     <div id="progress-panel">
       <div class="mini-palette"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4" id="mini-mix"></i></div>
       <div class="progress-body">
