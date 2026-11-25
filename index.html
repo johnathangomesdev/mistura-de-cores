@@ -48,17 +48,19 @@
   <div id="hud-top" class="hud">
     <div class="side left">
       <div class="btn-grid">
-        <button id="btn-pause" class="icon-btn" data-i18n-aria="aPause">
-          <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.6"/><rect x="14" y="5" width="4" height="14" rx="1.6"/></svg>
+        <!-- Botões ilustrados (img/ui). A plaquinha com o nome só aparece em telas largas. -->
+        <button id="btn-pause" class="img-btn" data-i18n-aria="aPause">
+          <img src="img/ui/settings.png" alt=""><span class="plate" data-i18n="lblSettings"></span>
         </button>
-        <button id="btn-restart" class="icon-btn" data-i18n-aria="aRestart">
-          <svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 4.7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M4.2 4.5v5.4h5.4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <button id="btn-restart" class="img-btn" data-i18n-aria="aRestart">
+          <span class="restart-ico"><svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 4.7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M4.2 4.5v5.4h5.4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="plate" data-i18n="lblRestart"></span>
         </button>
-        <button id="btn-skip" class="icon-btn" data-i18n-aria="aSkip">
-          <svg viewBox="0 0 24 24"><path d="M4.5 6.2v11.6c0 .8.9 1.3 1.6.8l7.6-5.8c.5-.4.5-1.2 0-1.6L6.1 5.4c-.7-.5-1.6 0-1.6.8z"/><rect x="15.5" y="5.5" width="3.6" height="13" rx="1.5"/></svg>
+        <button id="btn-skip" class="img-btn" data-i18n-aria="aSkip">
+          <img src="img/ui/skip.png" alt=""><span class="plate" data-i18n="lblSkip"></span>
         </button>
-        <button id="btn-help" class="icon-btn" data-i18n-aria="aHelp">
-          <svg viewBox="0 0 24 24"><path d="M8.6 9.2a3.5 3.5 0 1 1 5.2 3c-1.1.7-1.8 1.3-1.8 2.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.8"/></svg>
+        <button id="btn-hint" class="img-btn" data-i18n-aria="aHint">
+          <img src="img/ui/hint.png" alt=""><span class="plate" data-i18n="lblHint"></span>
         </button>
       </div>
     </div>
@@ -71,11 +73,11 @@
     <div class="side right">
       <div id="badge"><span data-i18n="challenge">DESAFIO</span><strong id="challenge-count">1/4</strong></div>
       <div class="btn-row">
-        <button id="btn-theme" class="icon-btn" data-i18n-aria="aTheme">
-          <svg viewBox="0 0 24 24"><path d="M12 2.8C6.6 2.8 2.5 6.8 2.5 11.8c0 5 4 9.2 9 9.2 1.3 0 2.2-.9 2.2-2 0-.6-.2-1-.5-1.4-.3-.4-.5-.8-.5-1.3 0-1 .9-1.9 2-1.9h2.3c2.9 0 5.2-2.3 5.2-5.1 0-4.3-4.4-6.5-9.7-6.5z"/><circle cx="7.4" cy="11.6" r="1.6" class="hole"/><circle cx="10" cy="7.4" r="1.6" class="hole"/><circle cx="14.8" cy="7.2" r="1.6" class="hole"/><circle cx="17.9" cy="10.6" r="1.6" class="hole"/></svg>
+        <button id="btn-theme" class="img-btn" data-i18n-aria="aTheme">
+          <img src="img/ui/theme.png" alt=""><span class="plate" data-i18n="lblTheme"></span>
         </button>
-        <button id="btn-noads" class="icon-btn" data-i18n-aria="aNoAds">
-          <svg viewBox="0 0 24 24"><text x="12" y="16.2" text-anchor="middle" font-size="10.5" font-weight="700" font-family="Fredoka, system-ui, sans-serif">AD</text><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M5.6 18.4 18.4 5.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <button id="btn-noads" class="img-btn" data-i18n-aria="aNoAds">
+          <img src="img/ui/noads.png" alt=""><span class="plate" data-i18n="lblNoAds"></span>
         </button>
       </div>
     </div>
@@ -101,7 +103,7 @@
   <div id="pause-overlay" class="overlay">
     <div class="panel">
       <h2 data-i18n="paused">Pausado</h2>
-      <button id="btn-resume" class="big-btn" data-i18n="resume">Continuar</button>
+      <button id="btn-resume" class="big-btn play-btn"><img src="img/ui/play.png" alt=""><span data-i18n="resume">Continuar</span></button>
       <div class="settings">
         <h3 data-i18n="settings">Configurações</h3>
         <div class="set-label" data-i18n="language">Idioma</div>
@@ -112,6 +114,7 @@
         </div>
         <button id="btn-easy" class="toggle-btn" data-key="autoMix"></button>
         <p class="small" data-i18n-html="autoMixHelp"></p>
+        <button id="btn-help" class="toggle-btn" data-i18n="helpTitle">Como jogar</button>
       </div>
     </div>
   </div>
@@ -126,7 +129,8 @@
         <li><i style="background:#2166e6"></i><span data-i18n="help3"></span></li>
         <li><i style="background:#ffd81a">🌀</i><span data-i18n="help4"></span></li>
         <li><i class="ico">↺</i><span data-i18n="help5"></span></li>
-        <li><i class="ico">⏭</i><span data-i18n="help6"></span></li>
+        <li><img src="img/ui/hint.png" alt=""><span data-i18n="help7"></span></li>
+        <li><img src="img/ui/skip.png" alt=""><span data-i18n="help6"></span></li>
       </ol>
       <button class="big-btn" data-close data-i18n="gotIt">Entendi!</button>
     </div>
@@ -156,7 +160,7 @@
       <h2 data-i18n="congrats">Parabéns!</h2>
       <p data-i18n="allColors">Você fez todas as cores!</p>
       <div id="end-swatches"></div>
-      <button id="btn-replay" class="big-btn" data-i18n="playAgain">Jogar de novo</button>
+      <button id="btn-replay" class="big-btn play-btn"><img src="img/ui/play.png" alt=""><span data-i18n="playAgain">Jogar de novo</span></button>
     </div>
   </div>
 

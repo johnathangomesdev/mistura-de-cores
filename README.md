@@ -42,12 +42,16 @@ Alternativa com Node: `npx serve .`
 
 | Botão | O que faz |
 |---|---|
-| ⏸ Pausa | Pausa e abre as **configurações**: idioma, música, voz e mistura automática |
-| ↺ Recomeçar | Esvazia o pote |
-| ⏭ Pular | Pula o desafio atual |
-| ? Ajuda | Mostra como jogar |
-| 🎨 Tema | Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa) |
-| AD riscado | "Sem anúncios": por enquanto só mostra "Em breve" (o jogo ainda não tem anúncios nem loja). Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
+| ⚙️ Configurações | Pausa e abre: idioma, música, voz, mistura automática e "Como jogar" |
+| ↺ Limpar | Esvazia o pote |
+| ⏩ Pular Cor | Pula o desafio atual |
+| 💡 Dica | Mostra e fala a receita da cor (ex.: "misture 2× amarelo + azul") e faz as tintas certas pularem |
+| 🖼️ Temas | Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa) |
+| 🚫 Retirar Ads | Por enquanto só mostra "Em breve" (o jogo ainda não tem anúncios nem loja). Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
+
+As figuras dos botões ficam em `img/ui/` (recortadas da folha de botões, sem a plaquinha de texto). O nome
+de cada botão é desenhado por código, traduzido, numa plaquinha creme que só aparece em telas grandes.
+`play.png` é usado em Continuar/Jogar de novo; `ranking.png` está guardado para quando houver ranking.
 
 As escolhas ficam salvas no aparelho (`localStorage`: `mistura.settings`, `mistura.lang`).
 A música é um loop gerado por código (WebAudio), sem arquivos.

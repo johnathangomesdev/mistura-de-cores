@@ -62,7 +62,7 @@
     toast: $('toast'), banner: $('win-banner'),
     pauseOv: $('pause-overlay'), endOv: $('end-overlay'), endSwatches: $('end-swatches'),
     btnPause: $('btn-pause'), btnRestart: $('btn-restart'), btnResume: $('btn-resume'), btnReplay: $('btn-replay'),
-    btnSkip: $('btn-skip'), btnHelp: $('btn-help'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
+    btnSkip: $('btn-skip'), btnHelp: $('btn-help'), btnHint: $('btn-hint'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
     helpOv: $('help-overlay'), themeOv: $('theme-overlay'), adsOv: $('ads-overlay'),
     btnMusic: $('btn-music'), btnVoice: $('btn-voice'), btnEasy: $('btn-easy'),
     langPicker: $('lang-picker'), themePicker: $('theme-picker'),
@@ -697,6 +697,18 @@
     Sfx.pop();
   }
 
+  /** Botão 💡 Dica: mostra (e fala) a receita da cor e faz as tintas certas pularem. */
+  function showHint() {
+    if (state.celebrating || state.ended || state.paused) return;
+    const t = M.TARGETS[state.level];
+    const keys = M.KEYS.filter(k => t.recipe[k] > 0);
+    const part = k => (t.recipe[k] > 1 ? `${t.recipe[k]}× ` : '') + I18N.paint(k); // "2× amarelo"
+    showToast(T('hintRecipe', { recipe: keys.map(part).join(' + ') }), 'good', 4.5);
+    Voice.say(T('sayHint', { recipe: I18N.list(keys.map(k => I18N.paint(k))) }), 0.1);
+    world.puddles.forEach(p => { if (keys.includes(p.userData.key)) p.userData.wobbleT = 0; });
+    Sfx.pop();
+  }
+
   /** Nome da cor-alvo no cartaz (nomes compridos usam fonte menor). */
   function refreshTargetName() {
     const name = colorName(M.TARGETS[Math.min(state.level, M.TARGETS.length - 1)]);
@@ -1040,7 +1052,8 @@
   ui.btnResume.addEventListener('click', () => setPaused(false));
   ui.btnRestart.addEventListener('click', restartRound);
   ui.btnSkip.addEventListener('click', skipChallenge);
-  ui.btnHelp.addEventListener('click', () => openOverlay(ui.helpOv));
+  ui.btnHelp.addEventListener('click', () => openOverlay(ui.helpOv)); // fica nas configurações
+  ui.btnHint.addEventListener('click', showHint);
   ui.btnTheme.addEventListener('click', () => { renderThemePicker(); openOverlay(ui.themeOv); });
   ui.btnNoAds.addEventListener('click', () => openOverlay(ui.adsOv));
   ui.btnReplay.addEventListener('click', startGame);
