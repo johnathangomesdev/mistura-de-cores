@@ -44,7 +44,10 @@
   const START_SKIPS = 3;
   // musicVol / voiceVol = volume de 0 a 1 (0 = desligado).
   // gems = diamantes; ownedThemes / ownedBrushes = temas e pincéis comprados; brush = pincel em uso.
-  const START_GEMS = 20;
+  const START_GEMS = 9999;
+  // Diamantes infinitos: o saldo fica sempre em START_GEMS (compras não descontam).
+  // Para voltar ao normal, troque para false (e START_GEMS para 20).
+  const INFINITE_GEMS = true;
   const settings = {
     easyMix: false, musicVol: 0.6, voiceVol: 1, theme: 'classic', noAds: false,
     hints: START_HINTS, skips: START_SKIPS,
@@ -65,6 +68,7 @@
     if (!settings.ownedThemes.includes('classic')) settings.ownedThemes.unshift('classic');
     if (!settings.ownedBrushes.includes('classic')) settings.ownedBrushes.unshift('classic');
   } catch (_) { /* sem armazenamento: usa o padrão */ }
+  if (INFINITE_GEMS) settings.gems = START_GEMS; // quem já tinha 20 salvo também recebe
   function saveSettings() {
     try {
       localStorage.setItem('mistura.autoMix', settings.easyMix ? '1' : '0');
@@ -1406,7 +1410,7 @@
     }
     const ok = await confirmBox(question, T('buyFor', { price: `<i class="gem"></i> ${price}` }), preview);
     if (!ok) return false;
-    settings.gems -= price;
+    if (!INFINITE_GEMS) settings.gems -= price;
     saveSettings();
     refreshGems();
     showToast(T('bought'), 'good', 1.8);
