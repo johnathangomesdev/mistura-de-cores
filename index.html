@@ -62,36 +62,34 @@
 
   <!-- ===== HUD superior: botões, cor-alvo e contador de desafios ===== -->
   <div id="hud-top" class="hud">
+    <!-- Botões ilustrados (img/ui). A plaquinha com o nome só aparece em telas largas. -->
     <div class="side left">
-      <div class="btn-grid">
-        <!-- Botões ilustrados (img/ui). A plaquinha com o nome só aparece em telas largas. -->
-        <button id="btn-pause" class="img-btn" data-i18n-aria="aPause">
-          <img src="img/ui/settings.png" alt=""><span class="plate" data-i18n="lblSettings"></span>
-        </button>
-        <button id="btn-restart" class="img-btn" data-i18n-aria="aRestart">
-          <img src="img/ui/restart.png" alt=""><span class="plate" data-i18n="lblRestart"></span>
-        </button>
-        <button id="btn-theme" class="img-btn" data-i18n-aria="aTheme">
-          <img src="img/ui/theme.png" alt=""><span class="plate" data-i18n="lblTheme"></span>
-        </button>
-      </div>
+      <button id="btn-pause" class="img-btn" data-i18n-aria="aPause">
+        <img src="img/ui/settings.png" alt=""><span class="plate" data-i18n="lblSettings"></span>
+      </button>
+      <button id="btn-noads" class="img-btn" data-i18n-aria="aNoAds">
+        <img src="img/ui/noads.png" alt=""><span class="plate" data-i18n="lblNoAds"></span>
+      </button>
     </div>
 
-    <div id="target-card">
-      <div id="target-name">ROXO</div>
-      <div id="target-swatch"></div>
+    <div class="center">
+      <div id="badge"><span data-i18n="challenge">DESAFIO</span><strong id="challenge-count">1/4</strong></div>
+      <div id="target-card">
+        <div id="target-name">ROXO</div>
+        <div id="target-swatch"></div>
+      </div>
     </div>
 
     <div class="side right">
-      <div id="badge"><span data-i18n="challenge">DESAFIO</span><strong id="challenge-count">1/4</strong></div>
-      <div class="btn-row">
-        <button id="btn-store" class="img-btn" data-i18n-aria="aStore">
-          <img src="img/ui/store.png" alt=""><span class="plate" data-i18n="lblStore"></span>
-        </button>
-        <button id="btn-noads" class="img-btn" data-i18n-aria="aNoAds">
-          <img src="img/ui/noads.png" alt=""><span class="plate" data-i18n="lblNoAds"></span>
-        </button>
-      </div>
+      <button id="btn-theme" class="img-btn" data-i18n-aria="aTheme">
+        <img src="img/ui/theme.png" alt=""><span class="plate" data-i18n="lblTheme"></span>
+      </button>
+      <button id="btn-store" class="img-btn" data-i18n-aria="aStore">
+        <img src="img/ui/store.png" alt=""><span class="plate" data-i18n="lblStore"></span>
+      </button>
+      <button id="btn-restart" class="img-btn" data-i18n-aria="aRestart">
+        <img src="img/ui/restart.png" alt=""><span class="plate" data-i18n="lblRestart"></span>
+      </button>
     </div>
   </div>
 
@@ -109,7 +107,7 @@
       </button>
     </div>
     <div id="progress-panel">
-      <div class="mini-palette"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4" id="mini-mix"></i></div>
+      <div class="mini-palette"><img src="img/ui/palette.png" alt=""><i id="mini-mix"></i></div>
       <div class="progress-body">
         <div class="ptitle" data-i18n="mixProgress">PROGRESSO DA MISTURA</div>
         <div class="bar"><div id="progress-fill"></div></div>

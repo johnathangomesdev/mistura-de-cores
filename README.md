@@ -42,17 +42,17 @@ Alternativa com Node: `npx serve .`
 
 | Botão | O que faz |
 |---|---|
-| ⚙️ Configurações | Pausa e abre: idioma, volume da música e da voz (botão de mudo + controle deslizante; 0 = desligado), mistura automática e "Como jogar" |
-| ↺ Limpar | Esvazia o pote |
+| ⚙️ Configurações (esquerda) | Pausa e abre: idioma, volume da música e da voz (botão de mudo + controle deslizante; 0 = desligado), mistura automática e "Como jogar" |
+| ↺ Limpar (direita, 3º) | Esvazia o pote |
 | ⏩ Pular Cor | (embaixo, à direita) Pula o desafio atual. Gasta 1 pulo |
 | 💡 Dica | (embaixo, à esquerda) Mostra e fala a receita da cor (ex.: "misture 2× amarelo + azul") e faz as tintas certas pularem. Gasta 1 dica por cor (repetir na mesma cor é grátis) |
 
 Dicas e pulos têm um contador no canto do botão. Começam com `START_HINTS` / `START_SKIPS` (3) em `game.js`,
 ficam salvos no aparelho e, ao zerar, o botão fica cinza. Para dar mais (ex.: depois de um anúncio ou compra):
 `MixGame.addHints(n)` / `MixGame.addSkips(n)`.
-| 🖼️ Temas (esquerda) | **Cenário**: Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa). **Pincel**: Clássico, Morango, Oceano, Madeira, Dourado e Neon. O Clássico é grátis; os outros custam diamantes |
-| 🏪 Loja (direita) | Diamantes, pacotes de dicas/pulos e "Assistir" anúncio para ganhar +1 dica ou +1 pulo |
-| 🚫 Retirar Ads (direita) | Por enquanto só mostra "Em breve". Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
+| 🖼️ Temas (direita, 1º) | **Cenário**: Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa). **Pincel**: Clássico, Morango, Oceano, Madeira, Dourado e Neon. O Clássico é grátis; os outros custam diamantes |
+| 🏪 Loja (direita, 2º) | Diamantes, pacotes de dicas/pulos e "Assistir" anúncio para ganhar +1 dica ou +1 pulo |
+| 🚫 Retirar Ads (esquerda, embaixo da engrenagem) | Por enquanto só mostra "Em breve". Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
 
 ### Diamantes e loja
 

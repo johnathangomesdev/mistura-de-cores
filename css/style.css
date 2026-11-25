@@ -47,9 +47,12 @@ html, body {
   align-items: start;
   gap: 8px;
 }
-.side { display: flex; flex-direction: column; gap: 8px; }
+/* Coluna de botões em cada lado; no meio, o selo do desafio em cima do cartaz da cor */
+.side { display: flex; flex-direction: column; gap: 10px; }
 .side.left { align-items: flex-start; }
 .side.right { align-items: flex-end; }
+.center { display: flex; flex-direction: column; align-items: center; }
+.center #badge { position: relative; z-index: 1; margin-bottom: -8px; }
 
 .icon-btn {
   width: var(--btn, 46px); height: var(--btn, 46px);
@@ -67,10 +70,6 @@ html, body {
 .icon-btn svg { width: 26px; height: 26px; fill: currentColor; }
 .icon-btn svg .hole { fill: var(--purple); }
 .icon-btn[hidden] { display: none; }
-
-/* Botões do HUD: 2×2 à esquerda, fileira embaixo do selo à direita */
-.btn-grid { display: grid; grid-template-columns: repeat(2, auto); gap: 6px 8px; justify-items: center; }
-.btn-row { display: flex; gap: 8px; }
 
 /* Botões ilustrados (adesivos em img/ui): só a figura, sem fundo */
 .img-btn {
@@ -100,9 +99,8 @@ html, body {
   .img-btn .plate { display: block; }
 }
 @media (max-width: 430px) {
-  .img-btn { --btn: 44px; }
-  .btn-grid { gap: 4px 5px; }
-  .btn-row { gap: 5px; }
+  .img-btn { --btn: 46px; }
+  .side { gap: 8px; }
 }
 
 #btn-restart.attention { animation: attention 0.9s ease-in-out 4; }
@@ -210,18 +208,17 @@ html, body {
   gap: 10px;
   box-shadow: 0 5px 0 var(--purple-dd), 0 10px 20px rgba(0, 0, 0, .15);
 }
-.mini-palette {
-  position: relative; flex: 0 0 auto;
-  width: 50px; height: 46px;
-  border-radius: 50% 45% 50% 48%;
-  background: #e2a55c;
-  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .15);
+/* Ícone da paleta (img/ui/palette.png) + bolinha com a cor atual do pote */
+.mini-palette { position: relative; flex: 0 0 auto; width: 54px; height: 54px; }
+.mini-palette img {
+  width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .25));
 }
-.mini-palette i { position: absolute; width: 13px; height: 13px; border-radius: 50%; }
-.mini-palette .d1 { background: #ee2126; left: 18px; top: 5px; }
-.mini-palette .d2 { background: #ffd81a; left: 6px; top: 18px; }
-.mini-palette .d3 { background: #2166e6; left: 31px; top: 18px; }
-.mini-palette .d4 { background: #fff; left: 18px; top: 28px; transition: background .3s; box-shadow: 0 0 0 2px rgba(0, 0, 0, .12); }
+.mini-palette i {
+  position: absolute; right: -3px; bottom: -2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; border: 3px solid #fff; box-shadow: 0 0 0 2px #2a1838, 0 2px 3px rgba(0, 0, 0, .3);
+  transition: background .3s;
+}
 .progress-body { flex: 1; }
 .ptitle {
   color: #fff; font-weight: 700; font-size: 14px; letter-spacing: 1px;
