@@ -56,6 +56,12 @@ de cada botão é desenhado por código, traduzido, numa plaquinha creme que só
 As escolhas ficam salvas no aparelho (`localStorage`: `mistura.settings`, `mistura.lang`).
 A música é um loop gerado por código (WebAudio), sem arquivos.
 
+## Ícone do app
+
+A logo (gotinhas + pote + paleta) está em `img/icons/`: `favicon.ico` e `favicon-48.png` (aba do navegador),
+`apple-touch-icon.png` (iPhone, fundo creme), `icon-192/512.png` e `icon-maskable-512.png` (Android/PWA,
+via `manifest.webmanifest`). No celular, "Adicionar à tela inicial" instala o jogo com esse ícone, em tela cheia.
+
 ## Idiomas
 
 Português, English e Español, em `js/i18n.js`. O idioma inicial segue o do aparelho.
