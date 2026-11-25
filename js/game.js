@@ -49,6 +49,7 @@
     easyMix: false, musicVol: 0.6, voiceVol: 1, theme: 'classic', noAds: false,
     hints: START_HINTS, skips: START_SKIPS,
     gems: START_GEMS, ownedThemes: ['classic'], ownedBrushes: ['classic'], brush: 'classic',
+    tutorialDone: false, // tutorial guiado da primeira cor já foi completado
   };
   try {
     const saved = localStorage.getItem('mistura.autoMix');
@@ -77,7 +78,7 @@
   const ui = {
     hudTop: $('hud-top'), hudBottom: $('hud-bottom'),
     name: $('target-name'), swatch: $('target-swatch'), count: $('challenge-count'),
-    instruction: $('instruction'), fill: $('progress-fill'), miniMix: $('mini-mix'),
+    fill: $('progress-fill'), miniMix: $('mini-mix'),
     toast: $('toast'), banner: $('win-banner'),
     pauseOv: $('pause-overlay'), endOv: $('end-overlay'), endSwatches: $('end-swatches'),
     btnPause: $('btn-pause'), btnRestart: $('btn-restart'), btnResume: $('btn-resume'), btnReplay: $('btn-replay'),
@@ -379,7 +380,9 @@
   const splashPlay = document.getElementById('splash-play');
   if (splashPlay) splashPlay.addEventListener('click', () => {
     const t = M.TARGETS[state.level];
-    Voice.say(T('sayStart', { color: spokenName(colorName(t)) }), 0.5);
+    const start = T('sayStart', { color: spokenName(colorName(t)) });
+    // No tutorial, já emenda a instrução do primeiro passo
+    Voice.say(tut.on && tut.step ? `${start} ${tutText(tut.step)}` : start, 0.5);
   });
 
   // =================================================================
@@ -539,6 +542,7 @@
       // 1) Encostou numa poça? Carrega o pincel com aquela cor.
       for (const p of world.puddles) {
         if (!p.userData.active || p.userData.appear < 0.6) continue; // só as tintas desta fase
+        if (!tutAllowsPaint(p.userData.key)) continue; // tutorial: só a tinta do passo atual
         const dx = tip.x - p.position.x, dz = tip.z - p.position.z;
         if (dx * dx + dz * dz < PICK_RADIUS * PICK_RADIUS && state.brushLoad !== p.userData.key) {
           // TRAVA DE SEGURANÇA: depois que a criança começou a misturar,
@@ -645,7 +649,7 @@
 
     world.fx.spawnDrops(tip, rgb, surfaceWorldY() + 0.02);
     Sfx.plop();
-    if (wasEmpty) showToast(T('instAnother'), 'good', 2.2);
+    if (wasEmpty && !tut.on) showToast(T('instAnother'), 'good', 2.2);
   }
 
   /**
@@ -1034,16 +1038,6 @@
   // =================================================================
   // HUD
   // =================================================================
-  let lastInstruction = '';
-  function setInstruction(text) {
-    if (text === lastInstruction) return;
-    lastInstruction = text;
-    ui.instruction.textContent = text;
-    ui.instruction.classList.remove('bump');
-    void ui.instruction.offsetWidth;
-    ui.instruction.classList.add('bump');
-  }
-
   let toastTimer = null;
   function showToast(text, kind = '', seconds = 3) {
     ui.toast.textContent = text;
@@ -1053,25 +1047,149 @@
   }
 
   function updateHud() {
-    // Instrução curta que muda conforme o que a criança deve fazer agora
-    let text;
-    if (state.celebrating) text = T('instCelebrate');
-    else if (state.brushLoad) text = T('instCarry', { paint: I18N.paint(state.brushLoad) });
-    else if (state.drops >= 2 && state.mixed < 1) {
-      if (state.autoMixing) text = T('instMixing');
-      else text = settings.easyMix ? T('instTapPot') : T('instStir');
-    }
-    else if (state.drops === 1) text = T('instAnother');
-    else if (state.drops === 0) text = T('instStart');
-    else if (state.lastHint === 'wrong') text = T('instClean');
-    else text = T('instMore');
-    setInstruction(text);
-
     const progress = state.drops >= 2 ? state.mixed : 0;
     ui.fill.style.width = `${(progress * 100).toFixed(1)}%`;
     const base = state.drops > 0 ? currentBaseColor() : [0.55, 0.25, 0.85];
     ui.fill.style.background = M.toCss(base);
     ui.miniMix.style.background = state.drops > 0 ? M.toCss(base) : '#ffffff';
+  }
+
+  // =================================================================
+  // Tutorial guiado — só na primeira cor, até a criança completar uma vez
+  //   1/3 pegar a 1ª tinta e levar ao pote
+  //   2/3 pegar a 2ª tinta e levar ao pote
+  //   3/3 girar o pincel no pote para misturar → "Tutorial completo!"
+  // O passo é deduzido do estado do jogo (o botão Limpar volta ao passo 1 sozinho).
+  // Uma mãozinha mostra o gesto e um anel pulsa no alvo; só a tinta do passo pode ser pega.
+  // =================================================================
+  const tut = {
+    on: !settings.tutorialDone, step: '', t: 0, doneT: 0,
+    tip: $('tut-tip'), text: $('tut-text'), num: $('tut-step'),
+    layer: $('tut-layer'), hand: $('tut-hand'), ring: $('tut-ring'),
+  };
+  let audioReady = !document.getElementById('splash'); // sem splash (testes): pode falar já
+  window.addEventListener('splashdone', () => { audioReady = true; });
+
+  /** As duas tintas da primeira cor (roxo = vermelho + azul). */
+  function tutKeys() {
+    const r = M.TARGETS[0].recipe;
+    return M.KEYS.filter(k => r[k] > 0);
+  }
+  function tutStepNow() {
+    if (state.celebrating) return 'done';
+    const [k1, k2] = tutKeys();
+    if (state.drops === 0) return state.brushLoad === k1 ? 'carry1' : 'pick1';
+    if (state.drops === 1) return state.brushLoad === k2 ? 'carry2' : 'pick2';
+    return 'stir';
+  }
+  function tutText(step) {
+    const [k1, k2] = tutKeys();
+    switch (step) {
+      case 'pick1': return T('tutPick', { paint: I18N.paint(k1) });
+      case 'carry1': return T('tutCarry');
+      case 'pick2': return T('tutPick2', { paint: I18N.paint(k2) });
+      case 'carry2': return T('tutCarry2', { paint: I18N.paint(k2) });
+      case 'stir': return T(settings.easyMix ? 'tutTap' : 'tutStir');
+      default: return T('tutDone');
+    }
+  }
+  /** Que tinta pode ser pega agora (durante o tutorial). */
+  function tutAllowsPaint(key) {
+    if (!tut.on) return true;
+    const [k1, k2] = tutKeys();
+    const s = tutStepNow();
+    if (s === 'pick1' || s === 'carry1') return key === k1;
+    if (s === 'pick2' || s === 'carry2') return key === k2;
+    return false;
+  }
+  function tutShowText(step) {
+    tut.text.textContent = tutText(step);
+    const n = { pick1: 1, carry1: 1, pick2: 2, carry2: 2, stir: 3 }[step];
+    tut.num.textContent = n ? `${n}/3` : '✓';
+    tut.tip.classList.remove('show');
+    void tut.tip.offsetWidth;
+    tut.tip.classList.add('show');
+    tut.tip.classList.toggle('done', step === 'done');
+  }
+  function tutEnd(done) {
+    tut.on = false;
+    tut.tip.classList.remove('show', 'done');
+    tut.layer.classList.remove('show');
+    if (done) { settings.tutorialDone = true; saveSettings(); }
+  }
+
+  const tutV = new THREE.Vector3();
+  /** Ponto do mundo → pixel da tela. */
+  function toScreen(x, y, z) {
+    tutV.set(x, y, z).project(camera);
+    const r = canvas.getBoundingClientRect();
+    return { x: r.left + (tutV.x + 1) / 2 * r.width, y: r.top + (1 - tutV.y) / 2 * r.height };
+  }
+  function puddleScreen(key) {
+    const p = world.puddles.find(q => q.userData.key === key);
+    return p ? toScreen(p.position.x, p.position.y, p.position.z) : toScreen(0, 0, 0);
+  }
+
+  function updateTutorial(dt) {
+    if (!tut.on) return;
+    if (state.level !== 0 || state.ended) { tutEnd(false); return; } // pulou a cor: tenta de novo na próxima partida
+    const step = tutStepNow();
+    if (step !== tut.step) {
+      tut.step = step;
+      tut.t = 0;
+      tutShowText(step);
+      if (step === 'done') { tut.doneT = 3.2; tut.layer.classList.remove('show'); }
+      if (audioReady) Voice.say(tutText(step), step === 'done' ? 1.6 : 0.25);
+      // a tinta certa dá um pulinho
+      const [k1, k2] = tutKeys();
+      const k = step === 'pick1' ? k1 : step === 'pick2' ? k2 : null;
+      if (k) world.puddles.forEach(p => { if (p.userData.key === k) p.userData.wobbleT = 0; });
+    }
+    if (step === 'done') {
+      tut.doneT -= dt;
+      if (tut.doneT <= 0) tutEnd(true);
+      return;
+    }
+
+    tut.t += dt;
+    tut.layer.classList.add('show');
+    const [k1, k2] = tutKeys();
+    const potC = toScreen(L.pot.x, surfaceWorldY(), L.pot.z);
+    const potE = toScreen(L.pot.x + L.pot.inner, surfaceWorldY(), L.pot.z);
+    const potR = Math.max(20, Math.abs(potE.x - potC.x));
+    let hx, hy, press = 0, ring = potC, ringScale = potR / 30, alpha = 1;
+
+    if (step === 'pick1' || step === 'pick2') {
+      // toca na tinta: desce, aperta, sobe
+      const pt = puddleScreen(step === 'pick1' ? k1 : k2);
+      const c = (tut.t % 1.3) / 1.3;
+      const lift = c < 0.45 ? 1 - c / 0.45 : c < 0.7 ? 0 : (c - 0.7) / 0.3;
+      hx = pt.x; hy = pt.y + lift * 30;
+      press = c >= 0.45 && c < 0.7 ? 1 : 0;
+      ring = pt; ringScale = 1;
+    } else if (step === 'carry1' || step === 'carry2') {
+      // arrasta da tinta até o pote
+      const from = puddleScreen(step === 'carry1' ? k1 : k2);
+      const c = (tut.t % 2.0) / 2.0;
+      const m = c < 0.15 ? 0 : c < 0.75 ? smooth01((c - 0.15) / 0.6) : 1;
+      hx = from.x + (potC.x - from.x) * m;
+      hy = from.y + (potC.y - from.y) * m;
+      press = 1;
+      alpha = c > 0.85 ? 1 - (c - 0.85) / 0.15 : c < 0.08 ? c / 0.08 : 1;
+    } else {
+      // gira em círculos dentro do pote
+      const a = tut.t * 4.2;
+      hx = potC.x + Math.cos(a) * potR * 0.5;
+      hy = potC.y + Math.sin(a) * potR * 0.32;
+      press = 1;
+    }
+    const s = press ? 0.88 : 1;
+    // o emoji 👆 tem a ponta do dedo no topo, um pouco à esquerda do centro
+    tut.hand.style.transform = `translate(${hx - 22}px, ${hy - 2}px) scale(${s})`;
+    tut.hand.style.opacity = alpha;
+    tut.ring.style.left = `${ring.x}px`;
+    tut.ring.style.top = `${ring.y}px`;
+    tut.ring.style.setProperty('--rs', ringScale.toFixed(2));
   }
 
   // =================================================================
@@ -1144,6 +1262,7 @@
     settings.easyMix = !settings.easyMix;
     if (!settings.easyMix) state.autoMixing = false;
     saveSettings(); refreshToggles();
+    if (tut.on && tut.step === 'stir') tut.text.textContent = tutText('stir');
   });
 
   // ---------- Idioma ----------
@@ -1162,7 +1281,7 @@
     refreshToggles();
     refreshTargetName();
     renderEndSwatches();
-    lastInstruction = '';
+    if (tut.on && tut.step) tut.text.textContent = tutText(tut.step); // balão do tutorial no novo idioma
     Voice.voice = null;
     Voice.pickVoice();
     resize(); // textos de tamanhos diferentes mudam a altura do HUD
@@ -1436,6 +1555,7 @@
       updateMascot(dt);
       world.fx.update(dt, camera);
       updateHud();
+      updateTutorial(dt);
       if (state.celebrating) {
         state.winTimer -= dt;
         if (state.winTimer <= 0) nextLevel();
@@ -1448,7 +1568,13 @@
     state, camera, world, update,
     render: () => renderer.render(scene, camera),
     goToLevel: i => { state.level = i; state.celebrating = false; startLevel(false); },
-    setNoAds, applyTheme, applyBrush, settings, addHints, addSkips, grantGems, openStore,
+    setNoAds, applyTheme, applyBrush, settings, addHints, addSkips, grantGems, openStore, tut,
+    // Mostra o tutorial de novo (volta para a primeira cor)
+    resetTutorial: () => {
+      settings.tutorialDone = false; saveSettings();
+      tut.on = true; tut.step = '';
+      state.level = 0; state.celebrating = false; startLevel(false);
+    },
   };
 
   window.addEventListener('resize', resize);

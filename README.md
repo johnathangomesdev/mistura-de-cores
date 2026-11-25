@@ -1,17 +1,18 @@
 # Mistura de Cores — demo jogável (Three.js)
 
 Jogo infantil: pegue tinta com o pincel, leve ao pote e gire para misturar até chegar na cor-alvo.
-**Progressão de tintas na paleta** (25 desafios):
+**Progressão de tintas na paleta** (50 desafios):
 
 | Fase | Tintas | Desafios |
 |---|---|---|
-| 1 | vermelho, amarelo, azul | Roxo, Laranja, Verde, Marrom, Lima, Turquesa, Magenta |
-| 2 | + branco | Rosa, Celeste, Lilás, Pêssego, Creme, Coral |
-| 3 | + preto | Cinza, Marinho, Musgo, Vinho, Prata, Anil |
-| 4 | + verde | Menta, Tijolo, Mostarda, Ameixa, Ardósia, Bege |
+| 1 | vermelho, amarelo, azul | Roxo, Laranja, Verde, Marrom, Lima, Turquesa, Magenta, Escarlate, Âmbar, Pera, Cobalto, Carmim, Ferrugem |
+| 2 | + branco | Rosa, Celeste, Lilás, Pêssego, Creme, Coral, Chiclete, Gelo, Canário, Orquídea, Lavanda, Lagoa, Avelã |
+| 3 | + preto | Cinza, Marinho, Musgo, Vinho, Prata, Anil, Chumbo, Grená, Oliva, Meia-noite, Berinjela, Malva |
+| 4 | + verde | Menta, Tijolo, Mostarda, Ameixa, Ardósia, Bege, Pistache, Abacate, Sálvia, Petróleo, Samambaia, Jade |
 
 Branco clareia, preto escurece e o verde vale meio amarelo + meio azul. As receitas e fases estão em
-`TARGETS` e `STAGE_PAINTS`, em `js/colors.js`.
+`TARGETS` e `STAGE_PAINTS`, em `js/colors.js`. Cada cor nova precisa ficar a pelo menos ~0,17 de distância (RGB) das outras,
+para não existirem duas metas quase iguais (`MATCH_TOLERANCE` é 0,16).
 
 ## Como executar
 
@@ -37,6 +38,14 @@ Alternativa com Node: `npx serve .`
 - Gire o pincel dentro do pote: a barra "Progresso da mistura" enche.
 - Com a mistura completa, o jogo compara com a meta: acertou → confete e próximo desafio;
   errou → uma dica (ex.: "Coloque mais azul"). Use ↺ para esvaziar o pote e ⏸ para pausar.
+
+## Tutorial guiado
+
+Na primeira cor (Roxo), até a criança completar uma vez, um balão entre a Dica e o Pular e uma mãozinha 👆
+mostram o gesto, com voz: **1/3** pegar o vermelho e levar ao pote, **2/3** pegar o azul e levar ao pote,
+**3/3** girar o pincel no pote → "Tutorial completo!". Durante o tutorial só a tinta do passo pode ser pega.
+O passo vem do estado do jogo (Limpar volta ao passo 1). Fica salvo em `settings.tutorialDone`; para ver de
+novo: `MixGame.resetTutorial()` no console. Não há mais o texto-guia fixo acima da barra de progresso.
 
 ## Botões do HUD
 

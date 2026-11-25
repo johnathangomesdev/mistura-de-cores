@@ -59,6 +59,8 @@
 
   <!-- Cena 3D (Three.js desenha aqui) -->
   <canvas id="game"></canvas>
+  <!-- Tutorial: anel pulsando no alvo + mãozinha mostrando o gesto (posições calculadas no game.js) -->
+  <div id="tut-layer"><div id="tut-ring"></div><div id="tut-hand">👆</div></div>
 
   <!-- ===== HUD superior: botões, cor-alvo e contador de desafios ===== -->
   <div id="hud-top" class="hud">
@@ -101,7 +103,8 @@
       <button id="btn-hint" class="img-btn side-btn" data-i18n-aria="aHint">
         <img src="img/ui/hint.png" alt=""><b class="count" id="hint-count">3</b><span class="plate" data-i18n="lblHint"></span>
       </button>
-      <div id="instruction">Pegue uma cor, leve ao pote e gire para misturar</div>
+      <!-- Balão do tutorial (só na primeira cor, até completar uma vez) -->
+      <div id="tut-tip"><b id="tut-step">1/3</b><span id="tut-text"></span></div>
       <button id="btn-skip" class="img-btn side-btn" data-i18n-aria="aSkip">
         <img src="img/ui/skip.png" alt=""><b class="count" id="skip-count">3</b><span class="plate" data-i18n="lblSkip"></span>
       </button>

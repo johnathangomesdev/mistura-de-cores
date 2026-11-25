@@ -126,6 +126,12 @@
     { stage: 0, id: 'lime', name: 'LIMA',  recipe: { y: 2, b: 1 } },
     { stage: 0, id: 'turquoise', name: 'TURQUESA',     recipe: { y: 1, b: 2 } },
     { stage: 0, id: 'magenta', name: 'MAGENTA',      recipe: { r: 2, b: 1 } },
+    { stage: 0, id: 'scarlet', name: 'ESCARLATE',    recipe: { r: 2, y: 1 } },
+    { stage: 0, id: 'amber', name: 'ÂMBAR',          recipe: { r: 1, y: 3 } },
+    { stage: 0, id: 'pear', name: 'PERA',            recipe: { y: 4, b: 1 } },
+    { stage: 0, id: 'cobalt', name: 'COBALTO',       recipe: { y: 1, b: 4 } },
+    { stage: 0, id: 'crimson', name: 'CARMIM',       recipe: { r: 4, b: 1 } },
+    { stage: 0, id: 'rust', name: 'FERRUGEM',        recipe: { r: 2, y: 2, b: 1 } },
     // Fase 2 — + branco
     { stage: 1, id: 'pink', name: 'ROSA',         recipe: { r: 1, w: 1 } },
     { stage: 1, id: 'lightBlue', name: 'CELESTE',   recipe: { b: 1, w: 1 } },
@@ -133,6 +139,13 @@
     { stage: 1, id: 'peach', name: 'PÊSSEGO',      recipe: { r: 1, y: 1, w: 1 } },
     { stage: 1, id: 'cream', name: 'CREME',        recipe: { y: 1, w: 2 } },
     { stage: 1, id: 'coral', name: 'CORAL',        recipe: { r: 2, y: 1, w: 1 } },
+    { stage: 1, id: 'bubblegum', name: 'CHICLETE',   recipe: { r: 1, w: 2 } },
+    { stage: 1, id: 'ice', name: 'GELO',             recipe: { b: 1, w: 3 } },
+    { stage: 1, id: 'canary', name: 'CANÁRIO',       recipe: { y: 2, w: 1 } },
+    { stage: 1, id: 'orchid', name: 'ORQUÍDEA',      recipe: { r: 2, b: 1, w: 1 } },
+    { stage: 1, id: 'lavender', name: 'LAVANDA',     recipe: { r: 1, b: 1, w: 3 } },
+    { stage: 1, id: 'lagoon', name: 'LAGOA',         recipe: { y: 1, b: 2, w: 1 } },
+    { stage: 1, id: 'hazel', name: 'AVELÃ',          recipe: { r: 1, y: 1, b: 1, w: 1 } },
     // Fase 3 — + preto
     { stage: 2, id: 'gray', name: 'CINZA',        recipe: { w: 1, k: 1 } },
     { stage: 2, id: 'darkBlue', name: 'MARINHO',  recipe: { b: 2, k: 1 } },
@@ -140,6 +153,12 @@
     { stage: 2, id: 'wine', name: 'VINHO',        recipe: { r: 3, b: 1, k: 1 } },
     { stage: 2, id: 'lightGray', name: 'PRATA',  recipe: { w: 2, k: 1 } },
     { stage: 2, id: 'indigo', name: 'ANIL',         recipe: { r: 1, b: 2 } },
+    { stage: 2, id: 'graphite', name: 'CHUMBO',      recipe: { w: 1, k: 3 } },
+    { stage: 2, id: 'garnet', name: 'GRENÁ',         recipe: { r: 1, k: 1 } },
+    { stage: 2, id: 'olive', name: 'OLIVA',          recipe: { y: 1, k: 1 } },
+    { stage: 2, id: 'midnight', name: 'MEIA-NOITE',  recipe: { b: 1, k: 2 } },
+    { stage: 2, id: 'eggplant', name: 'BERINJELA',   recipe: { r: 1, b: 1, k: 1 } },
+    { stage: 2, id: 'mauve', name: 'MALVA',          recipe: { r: 1, w: 2, k: 1 } },
     // Fase 4 — + verde
     { stage: 3, id: 'aqua', name: 'MENTA',   recipe: { g: 1, w: 1 } },
     { stage: 3, id: 'brick', name: 'TIJOLO',       recipe: { r: 2, y: 1, b: 1 } },
@@ -147,6 +166,12 @@
     { stage: 3, id: 'plum', name: 'AMEIXA',       recipe: { r: 2, y: 1, b: 2 } },
     { stage: 3, id: 'denim', name: 'ARDÓSIA',   recipe: { r: 1, y: 1, b: 3 } },
     { stage: 3, id: 'beige', name: 'BEGE',         recipe: { r: 1, y: 2, b: 1, w: 2 } },
+    { stage: 3, id: 'pistachio', name: 'PISTACHE',   recipe: { g: 1, w: 3 } },
+    { stage: 3, id: 'avocado', name: 'ABACATE',      recipe: { g: 2, y: 1, k: 1 } },
+    { stage: 3, id: 'sage', name: 'SÁLVIA',          recipe: { g: 2, w: 2, k: 1 } },
+    { stage: 3, id: 'teal', name: 'PETRÓLEO',        recipe: { g: 2, b: 1, k: 2 } },
+    { stage: 3, id: 'fern', name: 'SAMAMBAIA',       recipe: { r: 1, y: 2, b: 2 } },
+    { stage: 3, id: 'jade', name: 'JADE',            recipe: { r: 1, y: 2, b: 3 } },
   ].map(t => {
     t.recipe = Object.assign(emptyUnits(), t.recipe);
     t.rgb = mixAmounts(t.recipe);
