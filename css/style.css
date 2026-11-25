@@ -474,3 +474,85 @@ html, body {
 #splash.ready #splash-bar, #splash.ready #splash-text { display: none; }
 #splash.ready #splash-play { display: inline-flex; }
 @keyframes play-pulse { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
+
+/* ===== Diamantes, loja, seletor de temas/pincéis, confirmação e anúncio ===== */
+.gem {
+  display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -0.18em; flex: 0 0 auto;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 3h12l4 6-10 12L2 9z' fill='%2322c4f2' stroke='%23123a6b' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M2 9h20M8 3l-2 6 6 12 6-12-2-6M6 9l6-6 6 6' fill='none' stroke='%23123a6b' stroke-width='1.1' stroke-linejoin='round'/%3E%3Cpath d='M6.6 4.2 5 7.6h3.2z' fill='%23fff' opacity='.8'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.gem-balance {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0 0 6px;
+  background: #e6f8ff; border: 3px solid #1b6fb0; border-radius: 999px; padding: 4px 14px 4px 10px;
+  font-size: 20px; color: #123a6b;
+}
+.sec-title { margin: 12px 0 6px; font-size: 18px; text-align: left; }
+.panel.store { width: min(440px, 92vw); }
+
+/* Seletor (cenário e pincel) */
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin: 4px 0 12px; min-width: min(300px, 70vw); }
+.pick-grid button {
+  position: relative; border: 4px solid transparent; border-radius: 18px; background: #fff; cursor: pointer;
+  padding: 8px 6px 6px; font-family: var(--font); font-weight: 700; font-size: 14px; color: #4a3a5e;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .12);
+}
+.pick-grid button.on { border-color: var(--purple); }
+.pick-grid button .nm { display: block; }
+.pick-grid .sw { display: block; height: 44px; border-radius: 12px; margin-bottom: 6px; position: relative; overflow: hidden; }
+.pick-grid .sw > b { position: absolute; right: 6px; top: 6px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #fff; }
+.pick-grid button.locked .sw { filter: saturate(.55) brightness(.92); }
+.price {
+  position: absolute; top: -8px; right: -6px; display: inline-flex; align-items: center; gap: 2px;
+  background: #fff; color: #123a6b; border: 2.5px solid #1b6fb0; border-radius: 999px;
+  padding: 1px 7px 1px 4px; font-size: 13px; box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+}
+/* miniatura do pincel: cabo inclinado */
+.brush-sw { background: #f4efe6; }
+.brush-sw i { position: absolute; display: block; transform: rotate(-35deg); transform-origin: left center; left: 18%; }
+.brush-sw .bb { width: 16px; height: 12px; top: 68%; left: 10%; border-radius: 50% 10% 10% 50%; }
+.brush-sw .bm { width: 10px; height: 11px; top: 56%; left: 24%; border-radius: 2px; }
+.brush-sw .bh { width: 58%; height: 9px; top: 46%; left: 31%; border-radius: 3px 999px 999px 3px; }
+.brush-sw .bc { width: 9px; height: 9px; top: 8%; left: 80%; border-radius: 50%; }
+.brush-sw.glow .bh, .brush-sw.glow .bc { box-shadow: 0 0 8px currentColor, 0 0 6px #39ff88; }
+.brush-sw.shiny .bh { background-image: linear-gradient(#fff8 0 35%, transparent 60%) !important; }
+
+/* Loja */
+.store-list { display: flex; flex-direction: column; gap: 8px; }
+.store-item {
+  display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 16px; padding: 6px 8px 6px 6px;
+  text-align: left; font-weight: 700; font-size: 16px; box-shadow: 0 2px 0 rgba(0, 0, 0, .1);
+}
+.store-item > img { width: 42px; height: 42px; object-fit: contain; }
+.store-item > span:not(.gem-pack) { flex: 1; }
+.store-item.best { box-shadow: 0 0 0 3px #ffd23f, 0 2px 0 rgba(0, 0, 0, .1); }
+.gem-pack { width: 42px; display: grid; place-items: center; font-size: 22px; }
+.gem-pack .gem + .gem { margin-top: -10px; margin-left: 12px; font-size: 16px; }
+.buy-btn {
+  display: inline-flex; align-items: center; gap: 4px; border: none; cursor: pointer; white-space: nowrap;
+  font-family: var(--font); font-weight: 700; font-size: 16px; color: #123a6b;
+  background: #e6f8ff; border: 3px solid #1b6fb0; border-radius: 14px; padding: 6px 12px;
+}
+.buy-btn.ad { background: #2bb34a; border-color: #1a7f31; color: #fff; }
+.buy-btn.money { background: #ffd23f; border-color: #e0a800; color: #5a3d00; }
+.buy-btn .play-ico { font-size: 12px; }
+.buy-btn:active { transform: translateY(2px); }
+
+/* Confirmação e anúncio por cima das outras telas */
+.overlay.top { z-index: 40; }
+#confirm-preview:empty { display: none; }
+#confirm-preview { display: flex; justify-content: center; margin-bottom: 8px; }
+#confirm-preview .sw { width: 120px; height: 64px; border-radius: 14px; position: relative; overflow: hidden; display: block; }
+#confirm-preview .sw > b { position: absolute; right: 8px; top: 8px; width: 24px; height: 24px; border-radius: 50%; border: 3px solid #fff; }
+#confirm-preview .cf-img { width: 64px; height: 64px; object-fit: contain; }
+#confirm-yes { display: inline-flex; align-items: center; gap: 6px; }
+#confirm-overlay .toggle-btn { margin: 14px auto 0; }
+.ad-panel { width: min(360px, 88vw); background: #1d1730; color: #fff; border-color: #444; box-shadow: none; position: relative; }
+.ad-tag { position: absolute; top: 10px; left: 12px; font-size: 12px; background: #ffd23f; color: #3a2a00; padding: 2px 8px; border-radius: 6px; }
+.ad-box { padding: 26px 0 10px; }
+.ad-box img { width: 110px; height: 110px; }
+.ad-box p { font-size: 16px; font-weight: 600; margin: 10px 0 0; color: #ddd; }
+.ad-timer b {
+  display: inline-grid; place-items: center; width: 54px; height: 54px; border-radius: 50%;
+  border: 4px solid #ffd23f; font-size: 24px; margin-top: 8px;
+}
+#theme-overlay .panel, #store-overlay .panel { overflow-x: hidden; }
+#theme-overlay h2, #store-overlay h2 { font-size: 30px; margin-bottom: 4px; }

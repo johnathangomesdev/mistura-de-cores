@@ -50,8 +50,21 @@ Alternativa com Node: `npx serve .`
 Dicas e pulos têm um contador no canto do botão. Começam com `START_HINTS` / `START_SKIPS` (3) em `game.js`,
 ficam salvos no aparelho e, ao zerar, o botão fica cinza. Para dar mais (ex.: depois de um anúncio ou compra):
 `MixGame.addHints(n)` / `MixGame.addSkips(n)`.
-| 🖼️ Temas | Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa) |
-| 🚫 Retirar Ads | Por enquanto só mostra "Em breve" (o jogo ainda não tem anúncios nem loja). Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
+| 🖼️ Temas (esquerda) | **Cenário**: Clássico, Oceano, Floresta, Doce e Noite (cores do HUD, fundo e mesa). **Pincel**: Clássico, Morango, Oceano, Madeira, Dourado e Neon. O Clássico é grátis; os outros custam diamantes |
+| 🏪 Loja (direita) | Diamantes, pacotes de dicas/pulos e "Assistir" anúncio para ganhar +1 dica ou +1 pulo |
+| 🚫 Retirar Ads (direita) | Por enquanto só mostra "Em breve". Quando a compra existir, chame `MixGame.setNoAds(true)` e o botão some |
+
+### Diamantes e loja
+
+- Saldo inicial `START_GEMS` (20). Preços em `PRICES` (tema 40, pincel 25) e `STORE_ITEMS` (3 dicas 15, 3 pulos 20,
+  10 dicas 40, 10 pulos 55), em `game.js`. Tudo salvo no aparelho (`mistura.settings`). Sem saldo, a compra abre a loja.
+- Acabaram as dicas/pulos → tocar no botão abre a loja.
+- **Pacotes de diamantes com dinheiro (`GEM_PACKS`) ainda não estão integrados** (Google Play Billing / App Store /
+  Stripe). Ao confirmar um pagamento, chame `MixGame.grantGems(n)`.
+- **Anúncio com recompensa é uma SIMULAÇÃO** (tela de 5 s). Para usar um de verdade (AdMob, AdSense H5 rewarded...),
+  defina antes do `game.js`: `window.MixAds = { showRewarded: () => Promise<boolean> }` (true = assistiu até o fim).
+- Atenção: como fica tudo no `localStorage`, dá para editar o saldo pelo navegador. Para dinheiro de verdade, o saldo
+  precisa ficar num servidor.
 
 As figuras dos botões ficam em `img/ui/` (recortadas da folha de ícones). O nome de cada botão é desenhado
 por código, traduzido, numa plaquinha creme que só aparece em telas grandes. `play.png` é usado em

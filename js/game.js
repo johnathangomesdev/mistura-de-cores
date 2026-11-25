@@ -43,7 +43,13 @@
   const START_HINTS = 3;
   const START_SKIPS = 3;
   // musicVol / voiceVol = volume de 0 a 1 (0 = desligado).
-  const settings = { easyMix: false, musicVol: 0.6, voiceVol: 1, theme: 'classic', noAds: false, hints: START_HINTS, skips: START_SKIPS };
+  // gems = diamantes; ownedThemes / ownedBrushes = temas e pincéis comprados; brush = pincel em uso.
+  const START_GEMS = 20;
+  const settings = {
+    easyMix: false, musicVol: 0.6, voiceVol: 1, theme: 'classic', noAds: false,
+    hints: START_HINTS, skips: START_SKIPS,
+    gems: START_GEMS, ownedThemes: ['classic'], ownedBrushes: ['classic'], brush: 'classic',
+  };
   try {
     const saved = localStorage.getItem('mistura.autoMix');
     if (saved !== null) settings.easyMix = saved === '1';
@@ -52,7 +58,11 @@
     if (s.music === false && s.musicVol === undefined) s.musicVol = 0;
     if (s.voice === false && s.voiceVol === undefined) s.voiceVol = 0;
     delete s.music; delete s.voice;
+    // temas eram grátis antes da loja: quem já usava um tema fica com ele
+    if (s.theme && !s.ownedThemes) s.ownedThemes = ['classic', s.theme];
     Object.assign(settings, s);
+    if (!settings.ownedThemes.includes('classic')) settings.ownedThemes.unshift('classic');
+    if (!settings.ownedBrushes.includes('classic')) settings.ownedBrushes.unshift('classic');
   } catch (_) { /* sem armazenamento: usa o padrão */ }
   function saveSettings() {
     try {
@@ -75,7 +85,11 @@
     hintCount: $('hint-count'), skipCount: $('skip-count'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
     helpOv: $('help-overlay'), themeOv: $('theme-overlay'), adsOv: $('ads-overlay'),
     btnEasy: $('btn-easy'),
-    langPicker: $('lang-picker'), themePicker: $('theme-picker'),
+    langPicker: $('lang-picker'), themePicker: $('theme-picker'), brushPicker: $('brush-picker'),
+    btnStore: $('btn-store'), storeOv: $('store-overlay'), storeItems: $('store-items'), storeGems: $('store-gems'),
+    confirmOv: $('confirm-overlay'), confirmText: $('confirm-text'), confirmYes: $('confirm-yes'),
+    confirmNo: $('confirm-no'), confirmPreview: $('confirm-preview'),
+    adOv: $('ad-overlay'), adSeconds: $('ad-seconds'),
   };
 
   // ---------------- Three.js ----------------
@@ -779,7 +793,7 @@
   /** Botão ⏭: pula o desafio atual e vai para o próximo. */
   function skipChallenge() {
     if (state.celebrating || state.ended || state.paused) return;
-    if (settings.skips <= 0) { showToast(T('noSkips'), 'warn', 2.2); Sfx.hmm(); return; }
+    if (settings.skips <= 0) { showToast(T('noSkips'), 'warn', 2.2); Sfx.hmm(); openStore(); return; }
     settings.skips -= 1;
     saveSettings();
     refreshCounters(ui.btnSkip);
@@ -799,7 +813,7 @@
   function showHint() {
     if (state.celebrating || state.ended || state.paused) return;
     if (hintPaidLevel !== state.level) {
-      if (settings.hints <= 0) { showToast(T('noHints'), 'warn', 2.2); Sfx.hmm(); return; }
+      if (settings.hints <= 0) { showToast(T('noHints'), 'warn', 2.2); Sfx.hmm(); openStore(); return; }
       settings.hints -= 1;
       hintPaidLevel = state.level;
       saveSettings();
@@ -1055,7 +1069,7 @@
   // Telas por cima do jogo (pausa, ajuda, tema, anúncios)
   // Enquanto qualquer uma está aberta o jogo fica pausado.
   // =================================================================
-  const OVERLAYS = [ui.pauseOv, ui.helpOv, ui.themeOv, ui.adsOv];
+  const OVERLAYS = [ui.pauseOv, ui.helpOv, ui.themeOv, ui.adsOv, ui.storeOv];
   function openOverlay(ov) {
     if (state.ended) return;
     OVERLAYS.forEach(o => o.classList.toggle('show', o === ov));
@@ -1135,6 +1149,7 @@
   I18N.onChange(() => {
     renderLangPicker();
     renderThemePicker();
+    renderStore();
     refreshToggles();
     refreshTargetName();
     renderEndSwatches();
@@ -1154,8 +1169,9 @@
     night:   { ui: ['#7c4dff', '#5530c9', '#3a1f92', '#9e7bff'], bg: 0x2b2445, table: ['#5a4b7e', '#2f2550'] },
   };
   function applyTheme(id) {
-    const th = THEMES[id] || THEMES.classic;
-    settings.theme = THEMES[id] ? id : 'classic';
+    if (!THEMES[id] || !settings.ownedThemes.includes(id)) id = 'classic';
+    const th = THEMES[id];
+    settings.theme = id;
     const st = document.documentElement.style;
     ['--purple', '--purple-d', '--purple-dd', '--purple-l'].forEach((v, i) => st.setProperty(v, th.ui[i]));
     document.querySelector('meta[name="theme-color"]').setAttribute('content', th.ui[0]);
@@ -1164,27 +1180,201 @@
     scene.fog.color.setHex(th.bg);
     W.setTableColors(world.table, th.table[0], th.table[1]);
   }
+  const hex = n => `#${n.toString(16).padStart(6, '0')}`;
+  const gemTag = n => `<span class="price"><i class="gem"></i>${n}</span>`;
+  function themeSwatch(id) {
+    const th = THEMES[id];
+    return `<span class="sw" style="background:linear-gradient(135deg, ${hex(th.bg)} 0 45%, ${th.table[0]} 45%)">` +
+      `<b style="background:${th.ui[0]}"></b></span>`;
+  }
+  function brushSwatch(id) {
+    const s = W.BRUSH_SKINS[id];
+    return `<span class="sw brush-sw${s.glow ? ' glow' : ''}${s.shiny ? ' shiny' : ''}">` +
+      `<i class="bh" style="background:${hex(s.handle)}"></i><i class="bc" style="background:${hex(s.cap)}"></i>` +
+      `<i class="bm" style="background:${hex(s.metal)}"></i><i class="bb" style="background:${hex(s.bristle)}"></i></span>`;
+  }
+  /** Card do seletor: selecionado (borda), comprado ou com preço em diamantes. */
+  function pickCard(kind, id, name, swatch, owned, selected, price) {
+    return `<button data-${kind}="${id}" class="${selected ? 'on' : ''}${owned ? '' : ' locked'}">${swatch}` +
+      `<span class="nm">${name}</span>${owned ? '' : gemTag(price)}</button>`;
+  }
   function renderThemePicker() {
     const names = T('themes');
-    ui.themePicker.innerHTML = Object.keys(THEMES).map(id => {
-      const th = THEMES[id];
-      return `<button data-theme="${id}" class="${id === settings.theme ? 'on' : ''}">` +
-        `<span class="sw" style="background:linear-gradient(135deg, #${th.bg.toString(16).padStart(6, '0')} 0 45%, ${th.table[0]} 45%)">` +
-        `<b style="background:${th.ui[0]}"></b></span>${names[id]}</button>`;
-    }).join('');
+    ui.themePicker.innerHTML = Object.keys(THEMES).map(id => pickCard('theme', id, names[id], themeSwatch(id),
+      settings.ownedThemes.includes(id), id === settings.theme, PRICES.theme)).join('');
+    const bn = T('brushes');
+    ui.brushPicker.innerHTML = Object.keys(W.BRUSH_SKINS).map(id => pickCard('brush', id, bn[id], brushSwatch(id),
+      settings.ownedBrushes.includes(id), id === settings.brush, PRICES.brush)).join('');
+    refreshGems();
   }
-  ui.themePicker.addEventListener('click', e => {
-    const b = e.target.closest('button[data-theme]');
-    if (!b) return;
-    applyTheme(b.dataset.theme);
+  async function pickTheme(id) {
+    if (!settings.ownedThemes.includes(id)) {
+      const ok = await buyWithGems(PRICES.theme, T('confirmTheme', { name: T('themes')[id] }), themeSwatch(id));
+      if (!ok) return;
+      settings.ownedThemes.push(id);
+    }
+    applyTheme(id);
     saveSettings();
     renderThemePicker();
     Sfx.pop();
+  }
+  async function pickBrush(id) {
+    if (!settings.ownedBrushes.includes(id)) {
+      const ok = await buyWithGems(PRICES.brush, T('confirmBrush', { name: T('brushes')[id] }), brushSwatch(id));
+      if (!ok) return;
+      settings.ownedBrushes.push(id);
+    }
+    applyBrush(id);
+    saveSettings();
+    renderThemePicker();
+    Sfx.pop();
+  }
+  function applyBrush(id) {
+    if (!W.BRUSH_SKINS[id] || !settings.ownedBrushes.includes(id)) id = 'classic';
+    settings.brush = id;
+    W.setBrushSkin(brush, id);
+  }
+  ui.themePicker.addEventListener('click', e => {
+    const b = e.target.closest('button[data-theme]');
+    if (b) pickTheme(b.dataset.theme);
+  });
+  ui.brushPicker.addEventListener('click', e => {
+    const b = e.target.closest('button[data-brush]');
+    if (b) pickBrush(b.dataset.brush);
+  });
+
+  // =================================================================
+  // Diamantes e loja
+  // Diamantes compram temas, pincéis, dicas e pulos. Dicas e pulos também
+  // saem de graça assistindo um anúncio.
+  // =================================================================
+  const PRICES = { theme: 40, brush: 25 };
+  // Pacotes de dicas/pulos (preço em diamantes)
+  const STORE_ITEMS = [
+    { id: 'hints3',  hints: 3,  gems: 15 },
+    { id: 'skips3',  skips: 3,  gems: 20 },
+    { id: 'hints10', hints: 10, gems: 40 },
+    { id: 'skips10', skips: 10, gems: 55 },
+  ];
+  // Pacotes de diamantes (dinheiro de verdade). O preço final vem da loja do
+  // aparelho (Google Play / App Store) quando a compra for integrada.
+  const GEM_PACKS = [
+    { id: 'gems100',  gems: 100,  price: { pt: 'R$ 4,90',  en: 'US$ 0.99', es: 'US$ 0.99' } },
+    { id: 'gems550',  gems: 550,  price: { pt: 'R$ 19,90', en: 'US$ 4.99', es: 'US$ 4.99' }, best: true },
+    { id: 'gems1200', gems: 1200, price: { pt: 'R$ 39,90', en: 'US$ 9.99', es: 'US$ 9.99' } },
+  ];
+
+  function refreshGems() {
+    document.querySelectorAll('.gem-count').forEach(el => { el.textContent = settings.gems; });
+  }
+  function grantGems(n) { settings.gems += n; saveSettings(); refreshGems(); }
+  /** Pede confirmação e desconta. Sem saldo: avisa e abre a loja. */
+  async function buyWithGems(price, question, preview) {
+    if (settings.gems < price) {
+      showToast(T('noGems'), 'warn', 2.4);
+      Sfx.hmm();
+      openStore();
+      return false;
+    }
+    const ok = await confirmBox(question, T('buyFor', { price: `<i class="gem"></i> ${price}` }), preview);
+    if (!ok) return false;
+    settings.gems -= price;
+    saveSettings();
+    refreshGems();
+    showToast(T('bought'), 'good', 1.8);
+    return true;
+  }
+
+  // ---------- Confirmação (fica por cima das outras telas) ----------
+  let confirmResolve = null;
+  function confirmBox(text, yesHtml, previewHtml = '') {
+    ui.confirmText.textContent = text;
+    ui.confirmYes.innerHTML = yesHtml;
+    ui.confirmPreview.innerHTML = previewHtml;
+    ui.confirmOv.classList.add('show');
+    return new Promise(res => { confirmResolve = res; });
+  }
+  function closeConfirm(v) {
+    ui.confirmOv.classList.remove('show');
+    if (confirmResolve) { confirmResolve(v); confirmResolve = null; }
+  }
+  ui.confirmYes.addEventListener('click', () => closeConfirm(true));
+  ui.confirmNo.addEventListener('click', () => closeConfirm(false));
+
+  // ---------- Anúncio com recompensa ----------
+  // SIMULAÇÃO: mostra uma tela de 5 s e dá a recompensa. Para usar um anúncio
+  // de verdade (AdMob, AdSense H5 "rewarded", etc.), defina antes do game.js:
+  //   window.MixAds = { showRewarded: () => Promise<boolean> }  // true = assistiu até o fim
+  const AD_SECONDS = 5;
+  function simulatedRewardedAd() {
+    return new Promise(res => {
+      let left = AD_SECONDS;
+      ui.adSeconds.textContent = left;
+      ui.adOv.classList.add('show');
+      const t = setInterval(() => {
+        left -= 1;
+        ui.adSeconds.textContent = Math.max(0, left);
+        if (left <= 0) { clearInterval(t); ui.adOv.classList.remove('show'); res(true); }
+      }, 1000);
+    });
+  }
+  const Ads = window.MixAds && window.MixAds.showRewarded ? window.MixAds : { showRewarded: simulatedRewardedAd };
+  let watchingAd = false;
+  async function watchAdFor(what) {
+    if (watchingAd) return;
+    watchingAd = true;
+    Music.stop();
+    Voice.stop();
+    let ok = false;
+    try { ok = await Ads.showRewarded(); } catch (_) { ok = false; }
+    watchingAd = false;
+    Music.start();
+    if (!ok) { showToast(T('adFail'), 'warn', 2.4); return; }
+    if (what === 'hint') addHints(1); else addSkips(1);
+    renderStore();
+    showToast(T('gotReward', { what: T(what === 'hint' ? 'oneHint' : 'oneSkip') }), 'good', 2.2);
+    Sfx.win();
+  }
+
+  // ---------- Tela da loja ----------
+  function itemName(it) {
+    return it.hints ? T('itemHints', { n: it.hints }) : T('itemSkips', { n: it.skips });
+  }
+  function renderStore() {
+    ui.storeItems.innerHTML = STORE_ITEMS.map(it =>
+      `<div class="store-item"><img src="img/ui/${it.hints ? 'hint' : 'skip'}.png" alt=""><span>${itemName(it)}</span>` +
+      `<button class="buy-btn" data-item="${it.id}"><i class="gem"></i>${it.gems}</button></div>`).join('');
+    ui.storeGems.innerHTML = GEM_PACKS.map(p =>
+      `<div class="store-item${p.best ? ' best' : ''}"><span class="gem-pack"><i class="gem"></i><i class="gem"></i></span>` +
+      `<span>${T('gemsPack', { n: p.gems })}</span>` +
+      `<button class="buy-btn money" data-pack="${p.id}">${p.price[I18N.lang] || p.price.en}</button></div>`).join('');
+    refreshGems();
+  }
+  function openStore() { renderStore(); openOverlay(ui.storeOv); }
+  ui.storeOv.addEventListener('click', async e => {
+    const ad = e.target.closest('[data-ad]');
+    if (ad) { watchAdFor(ad.dataset.ad); return; }
+    const item = e.target.closest('[data-item]');
+    if (item) {
+      const it = STORE_ITEMS.find(x => x.id === item.dataset.item);
+      const preview = `<img class="cf-img" src="img/ui/${it.hints ? 'hint' : 'skip'}.png" alt="">`;
+      if (await buyWithGems(it.gems, T('confirmItem', { name: itemName(it) }), preview)) {
+        if (it.hints) addHints(it.hints); else addSkips(it.skips);
+        Sfx.win();
+      }
+      return;
+    }
+    const pack = e.target.closest('[data-pack]');
+    if (pack) {
+      // Compra com dinheiro de verdade: ainda não integrada (Google Play Billing / App Store).
+      // Quando integrar: ao confirmar o pagamento, chame MixGame.grantGems(pacote.gems).
+      showToast(T('soonPurchase'), 'warn', 2.6);
+    }
   });
 
   // ---------- Sem anúncios ----------
-  // O jogo ainda não tem anúncios nem loja. Quando a compra existir,
-  // chame MixGame.setNoAds(true) ao confirmar o pagamento: o botão some.
+  // Compra com dinheiro (ainda não integrada). Ao confirmar o pagamento,
+  // chame MixGame.setNoAds(true): o botão some.
   function setNoAds(v) {
     settings.noAds = !!v;
     ui.btnNoAds.hidden = settings.noAds;
@@ -1200,6 +1390,7 @@
   ui.btnHint.addEventListener('click', showHint);
   ui.btnTheme.addEventListener('click', () => { renderThemePicker(); openOverlay(ui.themeOv); });
   ui.btnNoAds.addEventListener('click', () => openOverlay(ui.adsOv));
+  ui.btnStore.addEventListener('click', openStore);
   ui.btnReplay.addEventListener('click', startGame);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) return;
@@ -1211,8 +1402,10 @@
   renderLangPicker();
   refreshToggles();
   applyTheme(settings.theme);
+  applyBrush(settings.brush);
   ui.btnNoAds.hidden = settings.noAds;
   refreshCounters();
+  refreshGems();
 
   // =================================================================
   // Laço principal
@@ -1246,7 +1439,7 @@
     state, camera, world, update,
     render: () => renderer.render(scene, camera),
     goToLevel: i => { state.level = i; state.celebrating = false; startLevel(false); },
-    setNoAds, applyTheme, settings, addHints, addSkips,
+    setNoAds, applyTheme, applyBrush, settings, addHints, addSkips, grantGems, openStore,
   };
 
   window.addEventListener('resize', resize);

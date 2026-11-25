@@ -320,13 +320,41 @@
     const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.235, 4.0, 32), handleMat);
     handle.position.y = 3.49;
     tilt.add(handle);
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.15, 20, 12), handleMat);
+    const capMat = handleMat.clone();
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.15, 20, 12), capMat);
     cap.position.y = 5.49;
     tilt.add(cap);
 
     tilt.traverse(o => { if (o.isMesh) o.castShadow = true; });
     scene.add(root);
-    return { root, tilt, bristleMat, coating, coatMat };
+    return { root, tilt, bristleMat, coating, coatMat, metal, handleMat, capMat };
+  }
+
+  /**
+   * Estilos de pincel (menu de temas). Cada um: cabo, ponta do cabo, cerdas, anel de metal.
+   * glow = brilho próprio do cabo (pincel "neon"); shiny = cabo metálico.
+   */
+  const BRUSH_SKINS = {
+    classic: { handle: 0xffc91f, cap: 0xffc91f, bristle: 0xd9a35b, metal: 0xcfd6e0 },
+    berry:   { handle: 0xff5fa2, cap: 0xffffff, bristle: 0xf4d9a8, metal: 0xe8c6d8 },
+    ocean:   { handle: 0x2f8cf0, cap: 0x9fe1ff, bristle: 0xe9e2d0, metal: 0xd7e6f2 },
+    wood:    { handle: 0x9a5b2e, cap: 0x6b3a1a, bristle: 0x3a2a1e, metal: 0xc9a36a },
+    gold:    { handle: 0xf2c14e, cap: 0xfff1b8, bristle: 0xfff3d6, metal: 0xd4a017, shiny: true },
+    neon:    { handle: 0x39ff88, cap: 0xff3df2, bristle: 0x1d1d2b, metal: 0x8a8aa0, glow: true },
+  };
+  function setBrushSkin(brush, id) {
+    const s = BRUSH_SKINS[id] || BRUSH_SKINS.classic;
+    brush.handleMat.color.setHex(s.handle);
+    brush.capMat.color.setHex(s.cap);
+    brush.bristleMat.color.setHex(s.bristle);
+    brush.metal.color.setHex(s.metal);
+    brush.metal.metalness = s.shiny ? 0.75 : 0.35;
+    brush.handleMat.metalness = s.shiny ? 0.6 : 0;
+    brush.handleMat.roughness = s.shiny ? 0.18 : 0.3;
+    brush.handleMat.emissive.setHex(s.glow ? s.handle : 0x000000);
+    brush.handleMat.emissiveIntensity = s.glow ? 0.45 : 0;
+    brush.capMat.emissive.setHex(s.glow ? s.cap : 0x000000);
+    brush.capMat.emissiveIntensity = s.glow ? 0.5 : 0;
   }
 
   // ------------------------------------------------------------------
@@ -592,5 +620,5 @@
     return { table, palette, puddles, pot, brush, mascot, fx };
   }
 
-  global.World = { build, getFitPoints, puddleSlots, potInnerRadius, setTableColors, PALETTE_TOP, LAYOUT };
+  global.World = { build, getFitPoints, puddleSlots, potInnerRadius, setTableColors, setBrushSkin, BRUSH_SKINS, PALETTE_TOP, LAYOUT };
 })(window);

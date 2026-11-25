@@ -71,6 +71,9 @@
         <button id="btn-restart" class="img-btn" data-i18n-aria="aRestart">
           <img src="img/ui/restart.png" alt=""><span class="plate" data-i18n="lblRestart"></span>
         </button>
+        <button id="btn-theme" class="img-btn" data-i18n-aria="aTheme">
+          <img src="img/ui/theme.png" alt=""><span class="plate" data-i18n="lblTheme"></span>
+        </button>
       </div>
     </div>
 
@@ -82,8 +85,8 @@
     <div class="side right">
       <div id="badge"><span data-i18n="challenge">DESAFIO</span><strong id="challenge-count">1/4</strong></div>
       <div class="btn-row">
-        <button id="btn-theme" class="img-btn" data-i18n-aria="aTheme">
-          <img src="img/ui/theme.png" alt=""><span class="plate" data-i18n="lblTheme"></span>
+        <button id="btn-store" class="img-btn" data-i18n-aria="aStore">
+          <img src="img/ui/store.png" alt=""><span class="plate" data-i18n="lblStore"></span>
         </button>
         <button id="btn-noads" class="img-btn" data-i18n-aria="aNoAds">
           <img src="img/ui/noads.png" alt=""><span class="plate" data-i18n="lblNoAds"></span>
@@ -167,8 +170,56 @@
   <div id="theme-overlay" class="overlay closable">
     <div class="panel">
       <h2 data-i18n="themeTitle">Escolha o tema</h2>
-      <div id="theme-picker"></div>
+      <div class="gem-balance"><i class="gem"></i><b class="gem-count">0</b></div>
+      <h3 class="sec-title" data-i18n="sceneThemes">Cenário</h3>
+      <div id="theme-picker" class="pick-grid"></div>
+      <h3 class="sec-title" data-i18n="brushThemes">Pincel</h3>
+      <div id="brush-picker" class="pick-grid"></div>
       <button class="big-btn" data-close data-i18n="close">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Loja: diamantes (dinheiro), dicas e pulos (diamantes ou anúncio) -->
+  <div id="store-overlay" class="overlay closable">
+    <div class="panel store">
+      <h2 data-i18n="storeTitle">Loja</h2>
+      <div class="gem-balance"><i class="gem"></i><b class="gem-count">0</b></div>
+
+      <h3 class="sec-title" data-i18n="storeFree">Grátis</h3>
+      <div class="store-list">
+        <div class="store-item"><img src="img/ui/hint.png" alt=""><span data-i18n="watchHint"></span>
+          <button class="buy-btn ad" data-ad="hint"><span class="play-ico">▶</span><span data-i18n="watch">Assistir</span></button></div>
+        <div class="store-item"><img src="img/ui/skip.png" alt=""><span data-i18n="watchSkip"></span>
+          <button class="buy-btn ad" data-ad="skip"><span class="play-ico">▶</span><span data-i18n="watch">Assistir</span></button></div>
+      </div>
+
+      <h3 class="sec-title" data-i18n="storeItems">Dicas e pulos</h3>
+      <div id="store-items" class="store-list"></div>
+
+      <h3 class="sec-title" data-i18n="storeGems">Diamantes</h3>
+      <div id="store-gems" class="store-list gems"></div>
+      <p class="small" data-i18n="storeGemsNote"></p>
+
+      <button class="big-btn" data-close data-i18n="close">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Confirmação de compra (por cima das outras telas) -->
+  <div id="confirm-overlay" class="overlay top">
+    <div class="panel">
+      <div id="confirm-preview"></div>
+      <p id="confirm-text"></p>
+      <button id="confirm-yes" class="big-btn"></button>
+      <button id="confirm-no" class="toggle-btn" data-i18n="cancel">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Anúncio com recompensa (SIMULAÇÃO: troque por AdMob/AdSense em MixAds.showRewarded) -->
+  <div id="ad-overlay" class="overlay top">
+    <div class="panel ad-panel">
+      <div class="ad-tag" data-i18n="adLabel">Anúncio</div>
+      <div class="ad-box"><img src="img/icons/icon-192.png" alt=""><p data-i18n="adSim"></p></div>
+      <div class="ad-timer"><b id="ad-seconds">5</b></div>
     </div>
   </div>
 
