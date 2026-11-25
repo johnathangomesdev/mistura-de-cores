@@ -5,10 +5,10 @@ Jogo infantil: pegue tinta com o pincel, leve ao pote e gire para misturar até 
 
 | Fase | Tintas | Desafios |
 |---|---|---|
-| 1 | vermelho, amarelo, azul | Roxo, Laranja, Verde, Marrom, Verde-limão, Turquesa, Magenta |
-| 2 | + branco | Rosa, Azul-claro, Lilás, Pêssego, Creme, Coral |
-| 3 | + preto | Cinza, Azul-escuro, Verde-escuro, Vinho, Cinza-claro, Anil |
-| 4 | + verde | Verde-água, Tijolo, Mostarda, Ameixa, Azul-jeans, Bege |
+| 1 | vermelho, amarelo, azul | Roxo, Laranja, Verde, Marrom, Lima, Turquesa, Magenta |
+| 2 | + branco | Rosa, Celeste, Lilás, Pêssego, Creme, Coral |
+| 3 | + preto | Cinza, Marinho, Musgo, Vinho, Prata, Anil |
+| 4 | + verde | Menta, Tijolo, Mostarda, Ameixa, Ardósia, Bege |
 
 Branco clareia, preto escurece e o verde vale meio amarelo + meio azul. As receitas e fases estão em
 `TARGETS` e `STAGE_PAINTS`, em `js/colors.js`.
@@ -42,7 +42,7 @@ Alternativa com Node: `npx serve .`
 
 | Botão | O que faz |
 |---|---|
-| ⚙️ Configurações | Pausa e abre: idioma, música, voz, mistura automática e "Como jogar" |
+| ⚙️ Configurações | Pausa e abre: idioma, volume da música e da voz (botão de mudo + controle deslizante; 0 = desligado), mistura automática e "Como jogar" |
 | ↺ Limpar | Esvazia o pote |
 | ⏩ Pular Cor | (embaixo, à direita) Pula o desafio atual. Gasta 1 pulo |
 | 💡 Dica | (embaixo, à esquerda) Mostra e fala a receita da cor (ex.: "misture 2× amarelo + azul") e faz as tintas certas pularem. Gasta 1 dica por cor (repetir na mesma cor é grátis) |

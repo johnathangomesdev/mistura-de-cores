@@ -42,11 +42,17 @@
   // hints / skips = quantas dicas e pulos ainda restam (começam com START_HINTS / START_SKIPS).
   const START_HINTS = 3;
   const START_SKIPS = 3;
-  const settings = { easyMix: false, music: true, voice: true, theme: 'classic', noAds: false, hints: START_HINTS, skips: START_SKIPS };
+  // musicVol / voiceVol = volume de 0 a 1 (0 = desligado).
+  const settings = { easyMix: false, musicVol: 0.6, voiceVol: 1, theme: 'classic', noAds: false, hints: START_HINTS, skips: START_SKIPS };
   try {
     const saved = localStorage.getItem('mistura.autoMix');
     if (saved !== null) settings.easyMix = saved === '1';
-    Object.assign(settings, JSON.parse(localStorage.getItem('mistura.settings') || '{}'));
+    const s = JSON.parse(localStorage.getItem('mistura.settings') || '{}');
+    // versão antiga guardava só liga/desliga
+    if (s.music === false && s.musicVol === undefined) s.musicVol = 0;
+    if (s.voice === false && s.voiceVol === undefined) s.voiceVol = 0;
+    delete s.music; delete s.voice;
+    Object.assign(settings, s);
   } catch (_) { /* sem armazenamento: usa o padrão */ }
   function saveSettings() {
     try {
@@ -68,7 +74,7 @@
     btnSkip: $('btn-skip'), btnHelp: $('btn-help'), btnHint: $('btn-hint'),
     hintCount: $('hint-count'), skipCount: $('skip-count'), btnTheme: $('btn-theme'), btnNoAds: $('btn-noads'),
     helpOv: $('help-overlay'), themeOv: $('theme-overlay'), adsOv: $('ads-overlay'),
-    btnMusic: $('btn-music'), btnVoice: $('btn-voice'), btnEasy: $('btn-easy'),
+    btnEasy: $('btn-easy'),
     langPicker: $('lang-picker'), themePicker: $('theme-picker'),
   };
 
@@ -177,13 +183,21 @@
       const m = this.MELODY[i % 32];
       if (m) this.note(this.hz(m), t, this.STEP * 2.6, 'triangle', 0.05);
     },
-    /** Liga (se a música estiver ativada e o áudio já liberado por um toque). */
+    /** Ganho a partir do volume 0..1 (curva quadrada: o controle parece mais "linear" ao ouvido). */
+    gainFor(v) { return Math.max(0.0001, v * v * 2.8); },
+    /** Muda o volume ao vivo (0 desliga; acima de 0 liga se estava parada). */
+    setVolume(v) {
+      if (v <= 0) { this.stop(); return; }
+      if (!this.timer) { this.start(); return; }
+      this.out.gain.setTargetAtTime(this.gainFor(v), Sfx.ctx.currentTime, 0.08);
+    },
+    /** Liga (se o volume for > 0 e o áudio já liberado por um toque). */
     start() {
       const ctx = Sfx.ctx;
-      if (!ctx || !settings.music || this.timer) return;
+      if (!ctx || settings.musicVol <= 0 || this.timer) return;
       this.out = ctx.createGain();
       this.out.gain.setValueAtTime(0.0001, ctx.currentTime);
-      this.out.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 1.5);
+      this.out.gain.exponentialRampToValueAtTime(this.gainFor(settings.musicVol), ctx.currentTime + 1.5);
       this.out.connect(ctx.destination);
       this.next = ctx.currentTime + 0.1;
       this.timer = setInterval(() => {
@@ -191,7 +205,7 @@
       }, 60);
     },
     stop() {
-      if (!this.timer) return;
+      if (!this.timer || !Sfx.ctx) return;
       clearInterval(this.timer);
       this.timer = null;
       const out = this.out, ctx = Sfx.ctx;
@@ -206,51 +220,98 @@
   // Voz: fala o nome da cor quando a criança acerta.
   // Usa a síntese de voz do próprio navegador (Web Speech API) no idioma
   // escolhido, com tom bem agudo para soar como uma criança. Sem arquivos.
+  //
+  // Cuidados (cada um corrigia um "às vezes não fala"):
+  // - prefere vozes LOCAIS (localService): as vozes online (ex.: "Google ...")
+  //   falham sem internet, demoram e às vezes ficam mudas;
+  // - guarda a fala em this.live: o Chrome pode descartar o objeto no meio
+  //   e a fala some;
+  // - depois de cancel() espera um instante antes de speak() (bug do Chrome
+  //   que engole a fala seguinte) e chama resume() (fica "pausado" depois
+  //   de trocar de aba/app);
+  // - se a fala não começar em 1,5 s ou der erro, tenta de novo uma vez com
+  //   a voz padrão do idioma, e marca a voz que falhou para não usá-la mais.
   // =================================================================
   const Voice = {
     voice: null,
+    bad: new Set(),            // nomes de vozes que falharam
+    live: null,                // fala atual (referência forte)
+    timer: null, watchdog: null,
     unlocked: false,
     supported: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window,
+    get ss() { return window.speechSynthesis; },
     pickVoice() {
       if (!this.supported) return;
       const lang = I18N.voiceLang();               // ex.: 'pt-BR'
-      const re = new RegExp('^' + lang.replace('-', '[-_]?'), 'i');
-      const voices = window.speechSynthesis.getVoices();
-      const exact = voices.filter(v => re.test(v.lang));
-      const any = exact.length ? exact : voices.filter(v => v.lang.slice(0, 2).toLowerCase() === lang.slice(0, 2));
+      const base = lang.slice(0, 2).toLowerCase();
+      const norm = l => (l || '').replace('_', '-').toLowerCase();
+      const voices = this.ss.getVoices().filter(v => !this.bad.has(v.name));
+      const exact = voices.filter(v => norm(v.lang) === lang.toLowerCase());
+      const pool = exact.length ? exact : voices.filter(v => norm(v.lang).slice(0, 2) === base);
       // Vozes femininas ficam mais parecidas com criança quando o tom sobe
-      const female = /francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila|samantha|zira|aria|jenny|karen|helena|sabina|laura|elvira|m[oó]nica|paulina|female|feminin|google/i;
-      this.voice = any.find(v => female.test(v.name)) || any[0] || null;
+      const female = /francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila|samantha|zira|aria|jenny|karen|helena|sabina|laura|elvira|m[oó]nica|paulina|female|feminin/i;
+      const local = pool.filter(v => v.localService);
+      this.voice = local.find(v => female.test(v.name)) || local[0] ||
+                   pool.find(v => female.test(v.name)) || pool[0] || null;
     },
+    volume() { return settings.voiceVol; },
     /** Navegadores de celular só liberam a fala depois de um toque. */
     unlock() {
       if (!this.supported || this.unlocked) return;
       this.unlocked = true;
       this.pickVoice();
-      const u = new SpeechSynthesisUtterance(' ');
+      const u = new SpeechSynthesisUtterance('.');
       u.volume = 0;
-      window.speechSynthesis.speak(u);
+      this.ss.speak(u);
     },
-    say(text, delay = 0) {
-      if (!this.supported || !settings.voice) return;
+    /** force = fala mesmo com o jogo pausado (prévia do volume nas configurações). */
+    say(text, delay = 0, force = false) {
+      if (!this.supported || this.volume() <= 0) return;
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => this.speakNow(text, false, force), delay * 1000);
+    },
+    speakNow(text, retry, force) {
+      if ((state.paused && !force) || this.volume() <= 0) return;
+      const ss = this.ss;
+      clearTimeout(this.watchdog);
+      if (ss.speaking || ss.pending) ss.cancel();
+      if (!this.voice && !retry) this.pickVoice();
       setTimeout(() => {
-        if (state.paused || !settings.voice) return;
-        if (!this.voice) this.pickVoice();
-        window.speechSynthesis.cancel();
+        ss.resume();
         const u = new SpeechSynthesisUtterance(text);
+        const voice = retry ? null : this.voice; // na 2ª tentativa: voz padrão do idioma
         u.lang = I18N.voiceLang();
-        if (this.voice) u.voice = this.voice;
-        u.pitch = 1.9;  // bem agudo = voz de criança
+        if (voice) u.voice = voice;
+        u.pitch = voice && !voice.localService ? 1.5 : 1.9; // bem agudo = voz de criança
         u.rate = 1.05;
-        u.volume = 1;
-        window.speechSynthesis.speak(u);
-      }, delay * 1000);
+        u.volume = Math.min(1, this.volume());
+        let started = false;
+        const fail = () => {
+          if (retry || started) return;
+          if (voice) { this.bad.add(voice.name); this.pickVoice(); }
+          this.speakNow(text, true, force);
+        };
+        u.onstart = () => { started = true; };
+        u.onend = () => { if (this.live === u) this.live = null; };
+        u.onerror = e => { if (e.error !== 'interrupted' && e.error !== 'canceled') fail(); };
+        this.live = u;
+        ss.speak(u);
+        this.watchdog = setTimeout(() => {
+          if (!started && !ss.speaking && this.live === u) { ss.cancel(); fail(); }
+        }, 1500);
+      }, 80);
     },
-    stop() { if (this.supported) window.speechSynthesis.cancel(); },
+    stop() {
+      if (!this.supported) return;
+      clearTimeout(this.timer);
+      clearTimeout(this.watchdog);
+      this.live = null;
+      this.ss.cancel();
+    },
   };
   if (Voice.supported) {
     Voice.pickVoice();
-    window.speechSynthesis.onvoiceschanged = () => Voice.pickVoice();
+    window.speechSynthesis.onvoiceschanged = () => Voice.pickVoice(); // a lista chega aos poucos
   }
 
   /** Nome da cor-alvo no idioma atual ("AZUL-CLARO"). */
@@ -991,23 +1052,46 @@
     ov.addEventListener('click', e => { if (e.target === ov || e.target.hasAttribute('data-close')) closeOverlays(); });
   });
 
-  // ---------- Configurações: liga/desliga ----------
+  // ---------- Configurações: volume da música e da voz ----------
+  // Cada linha: botão de mudo (lembra o último volume) + controle deslizante + valor.
+  const VOL = {
+    music: { key: 'musicVol', last: settings.musicVol || 0.6, apply: v => Music.setVolume(v) },
+    voice: { key: 'voiceVol', last: settings.voiceVol || 1, apply: v => { if (v <= 0) Voice.stop(); } },
+  };
+  function refreshVolumes() {
+    document.querySelectorAll('.vol-row').forEach(row => {
+      const v = settings[VOL[row.dataset.vol].key];
+      row.querySelector('input').value = Math.round(v * 100);
+      row.querySelector('.vol-val').textContent = v > 0 ? `${Math.round(v * 100)}%` : T('off');
+      row.classList.toggle('muted', v <= 0);
+    });
+  }
+  function setVolume(which, v, preview) {
+    const c = VOL[which];
+    settings[c.key] = v;
+    if (v > 0) c.last = v;
+    c.apply(v);
+    saveSettings();
+    refreshVolumes();
+    // Voz: fala o nome da cor atual para ouvir como ficou
+    if (which === 'voice' && preview && v > 0) Voice.say(spokenName(colorName(M.TARGETS[Math.min(state.level, M.TARGETS.length - 1)])), 0, true);
+  }
+  document.querySelectorAll('.vol-row').forEach(row => {
+    const which = row.dataset.vol, input = row.querySelector('input');
+    input.addEventListener('input', () => setVolume(which, input.value / 100, false));
+    input.addEventListener('change', () => setVolume(which, input.value / 100, true));
+    row.querySelector('.mute').addEventListener('click', () => {
+      const cur = settings[VOL[which].key];
+      setVolume(which, cur > 0 ? 0 : VOL[which].last, true);
+    });
+  });
   function refreshToggles() {
-    [[ui.btnMusic, settings.music], [ui.btnVoice, settings.voice], [ui.btnEasy, settings.easyMix]].forEach(([b, on]) => {
+    refreshVolumes();
+    [[ui.btnEasy, settings.easyMix]].forEach(([b, on]) => {
       b.textContent = `${T(b.dataset.key)}: ${on ? T('on') : T('off')}`;
       b.classList.toggle('on', on);
     });
   }
-  ui.btnMusic.addEventListener('click', () => {
-    settings.music = !settings.music;
-    if (settings.music) Music.start(); else Music.stop();
-    saveSettings(); refreshToggles();
-  });
-  ui.btnVoice.addEventListener('click', () => {
-    settings.voice = !settings.voice;
-    if (!settings.voice) Voice.stop();
-    saveSettings(); refreshToggles();
-  });
   ui.btnEasy.addEventListener('click', () => {
     settings.easyMix = !settings.easyMix;
     if (!settings.easyMix) state.autoMixing = false;

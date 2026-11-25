@@ -149,16 +149,16 @@
   const COLORS = {
     purple: ['ROXO', 'PURPLE', 'MORADO'],          orange: ['LARANJA', 'ORANGE', 'NARANJA'],
     green: ['VERDE', 'GREEN', 'VERDE'],            brown: ['MARROM', 'BROWN', 'MARRÓN'],
-    lime: ['VERDE-LIMÃO', 'LIME', 'VERDE LIMA'],   turquoise: ['TURQUESA', 'TURQUOISE', 'TURQUESA'],
+    lime: ['LIMA', 'LIME', 'LIMA'],   turquoise: ['TURQUESA', 'TURQUOISE', 'TURQUESA'],
     magenta: ['MAGENTA', 'MAGENTA', 'MAGENTA'],    pink: ['ROSA', 'PINK', 'ROSA'],
-    lightBlue: ['AZUL-CLARO', 'LIGHT BLUE', 'AZUL CLARO'], lilac: ['LILÁS', 'LILAC', 'LILA'],
+    lightBlue: ['CELESTE', 'CERULEAN', 'CELESTE'], lilac: ['LILÁS', 'LILAC', 'LILA'],
     peach: ['PÊSSEGO', 'PEACH', 'MELOCOTÓN'],      cream: ['CREME', 'CREAM', 'CREMA'],
     coral: ['CORAL', 'CORAL', 'CORAL'],            gray: ['CINZA', 'GRAY', 'GRIS'],
-    darkBlue: ['AZUL-ESCURO', 'DARK BLUE', 'AZUL OSCURO'], darkGreen: ['VERDE-ESCURO', 'DARK GREEN', 'VERDE OSCURO'],
-    wine: ['VINHO', 'BURGUNDY', 'BURDEOS'],        lightGray: ['CINZA-CLARO', 'LIGHT GRAY', 'GRIS CLARO'],
-    indigo: ['ANIL', 'INDIGO', 'AÑIL'],            aqua: ['VERDE-ÁGUA', 'AQUA', 'VERDE AGUA'],
+    darkBlue: ['MARINHO', 'NAVY', 'MARINO'], darkGreen: ['MUSGO', 'MOSS', 'MUSGO'],
+    wine: ['VINHO', 'BURGUNDY', 'BURDEOS'],        lightGray: ['PRATA', 'SILVER', 'PLATA'],
+    indigo: ['ANIL', 'INDIGO', 'AÑIL'],            aqua: ['MENTA', 'MINT', 'MENTA'],
     brick: ['TIJOLO', 'BRICK', 'LADRILLO'],        mustard: ['MOSTARDA', 'MUSTARD', 'MOSTAZA'],
-    plum: ['AMEIXA', 'PLUM', 'CIRUELA'],           denim: ['AZUL-JEANS', 'DENIM', 'AZUL VAQUERO'],
+    plum: ['AMEIXA', 'PLUM', 'CIRUELA'],           denim: ['ARDÓSIA', 'SLATE', 'PIZARRA'],
     beige: ['BEGE', 'BEIGE', 'BEIGE'],
   };
   // Tintas da paleta (minúsculas, usadas no meio das frases)

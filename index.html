@@ -119,9 +119,18 @@
         <h3 data-i18n="settings">Configurações</h3>
         <div class="set-label" data-i18n="language">Idioma</div>
         <div id="lang-picker" class="seg"></div>
-        <div class="set-row">
-          <button id="btn-music" class="toggle-btn" data-key="music"></button>
-          <button id="btn-voice" class="toggle-btn" data-key="voice"></button>
+        <!-- Volume: botão = mudo, deslizar = volume (0 desliga) -->
+        <div class="vol-row" data-vol="music">
+          <button class="mute" data-i18n-aria="music"><span class="on-ico">🎵</span><span class="off-ico">🔇</span></button>
+          <span class="vol-label" data-i18n="music">Música</span>
+          <input type="range" min="0" max="100" step="5">
+          <b class="vol-val"></b>
+        </div>
+        <div class="vol-row" data-vol="voice">
+          <button class="mute" data-i18n-aria="voice"><span class="on-ico">🗣️</span><span class="off-ico">🔇</span></button>
+          <span class="vol-label" data-i18n="voice">Voz</span>
+          <input type="range" min="0" max="100" step="5">
+          <b class="vol-val"></b>
         </div>
         <button id="btn-easy" class="toggle-btn" data-key="autoMix"></button>
         <p class="small" data-i18n-html="autoMixHelp"></p>
