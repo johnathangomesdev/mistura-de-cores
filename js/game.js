@@ -263,7 +263,16 @@
       const exact = voices.filter(v => norm(v.lang) === lang.toLowerCase());
       const pool = exact.length ? exact : voices.filter(v => norm(v.lang).slice(0, 2) === base);
       // Vozes femininas ficam mais parecidas com criança quando o tom sobe
-      const female = /francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila|samantha|zira|aria|jenny|karen|helena|sabina|laura|elvira|m[oó]nica|paulina|female|feminin/i;
+      const female = new RegExp([
+        'francisca|maria|luciana|thalita|vit[oó]ria|camila|helo[ií]sa|leila',       // pt
+        'samantha|zira|aria|jenny|karen',                                           // en
+        'helena|sabina|laura|elvira|m[oó]nica|paulina',                             // es
+        'katja|hedda|anna|petra|marlene|vicki|amala|seraphina',                     // de
+        'amelie|am[eé]lie|denise|julie|hortense|audrey|aur[eé]lie|marie|thomasina', // fr
+        'xiaoxiao|huihui|yaoyao|xiaoyi|ting-?ting|mei-?jia|li-?mu|lili',            // zh
+        'haruka|ayumi|nanami|kyoko|sayaka|o-?ren|mizuki',                           // ja
+        'female|feminin|weiblich|femme|女',
+      ].join('|'), 'i');
       const local = pool.filter(v => v.localService);
       this.voice = local.find(v => female.test(v.name)) || local[0] ||
                    pool.find(v => female.test(v.name)) || pool[0] || null;
@@ -848,7 +857,7 @@
   function refreshTargetName() {
     const name = colorName(M.TARGETS[Math.min(state.level, M.TARGETS.length - 1)]);
     ui.name.textContent = name;
-    ui.name.classList.toggle('long', name.length > 7);
+    ui.name.classList.toggle('long', I18N.width(name) > 7); // chinês/japonês contam em dobro
   }
 
   function renderEndSwatches() {
@@ -1259,9 +1268,9 @@
   // Pacotes de diamantes (dinheiro de verdade). O preço final vem da loja do
   // aparelho (Google Play / App Store) quando a compra for integrada.
   const GEM_PACKS = [
-    { id: 'gems100',  gems: 100,  price: { pt: 'R$ 4,90',  en: 'US$ 0.99', es: 'US$ 0.99' } },
-    { id: 'gems550',  gems: 550,  price: { pt: 'R$ 19,90', en: 'US$ 4.99', es: 'US$ 4.99' }, best: true },
-    { id: 'gems1200', gems: 1200, price: { pt: 'R$ 39,90', en: 'US$ 9.99', es: 'US$ 9.99' } },
+    { id: 'gems100',  gems: 100,  price: { pt: 'R$ 4,90',  en: 'US$ 0.99', es: 'US$ 0.99', de: '0,99 €', fr: '0,99 €', zh: '¥6',  ja: '¥160' } },
+    { id: 'gems550',  gems: 550,  price: { pt: 'R$ 19,90', en: 'US$ 4.99', es: 'US$ 4.99', de: '4,99 €', fr: '4,99 €', zh: '¥30', ja: '¥800' }, best: true },
+    { id: 'gems1200', gems: 1200, price: { pt: 'R$ 39,90', en: 'US$ 9.99', es: 'US$ 9.99', de: '9,99 €', fr: '9,99 €', zh: '¥68', ja: '¥1,600' } },
   ];
 
   function refreshGems() {

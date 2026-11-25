@@ -86,10 +86,17 @@ via `manifest.webmanifest`). No celular, "Adicionar à tela inicial" instala o j
 
 ## Idiomas
 
-Português, English e Español, em `js/i18n.js`. O idioma inicial segue o do aparelho.
-Para adicionar um idioma: copie o bloco `en` de `STRINGS`, traduza e acrescente a tradução de cada cor
-em `COLORS` e `PAINTS` (as cores-alvo são identificadas pelo `id` em `TARGETS`). A voz que fala a cor usa
-a voz do navegador no idioma escolhido. No HTML, textos fixos usam `data-i18n="chave"`.
+Português, English, Español, Deutsch, Français, 中文 (chinês simplificado) e 日本語 (japonês, em kana para
+crianças), em `js/i18n.js`. O idioma inicial segue o do aparelho.
+
+- Para adicionar um idioma: acrescente em `LANGS` e `ORDER`, copie o bloco `en` de `STRINGS` e traduza, e
+  acrescente uma coluna em `COLORS` e `PAINTS` (as cores-alvo são identificadas pelo `id` em `TARGETS`).
+  Texto que faltar cai no inglês.
+- Chinês e japonês carregam uma fonte arredondada do Google Fonts só quando escolhidos (`LANGS.x.font`:
+  ZCOOL KuaiLe / M PLUS Rounded 1c); a regra de fonte por idioma está no fim do `style.css`.
+- Listas ("vermelho, amarelo e azul") usam `Intl.ListFormat`, no formato de cada idioma.
+- A voz que fala a cor usa a voz do aparelho no idioma escolhido. No HTML, textos fixos usam `data-i18n="chave"`.
+- As traduções de de/fr/zh/ja foram feitas sem revisão de nativo: vale revisar antes de publicar.
 
 ## Arquivos
 

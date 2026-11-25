@@ -556,3 +556,8 @@ html, body {
 }
 #theme-overlay .panel, #store-overlay .panel { overflow-x: hidden; }
 #theme-overlay h2, #store-overlay h2 { font-size: 30px; margin-bottom: 4px; }
+
+/* Fontes para chinês e japonês (a Fredoka só tem letras latinas; os caracteres
+   CJK caem na fonte seguinte, carregada pelo i18n.js quando o idioma é escolhido) */
+html[lang^="ja"] { --font: 'Fredoka', 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif; }
+html[lang^="zh"] { --font: 'Fredoka', 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif; }

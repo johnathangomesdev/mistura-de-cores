@@ -1,8 +1,14 @@
 /* =====================================================================
    i18n.js — Textos do jogo em vários idiomas
 
-   PARA ADICIONAR UM IDIOMA: copie o bloco "en" de STRINGS, traduza,
-   e acrescente a tradução de cada cor em COLORS e PAINTS.
+   Idiomas: pt, en, es, de, fr, zh (chinês simplificado), ja (japonês).
+
+   PARA ADICIONAR UM IDIOMA:
+   1. acrescente em LANGS (nome no seletor, código da voz e, se precisar, fonte extra);
+   2. copie o bloco "en" de STRINGS e traduza;
+   3. acrescente a tradução de cada cor em COLORS e de cada tinta em PAINTS
+      (na mesma posição do código em ORDER).
+   Texto que faltar num idioma cai no inglês.
    Textos com {nome} recebem valores (ex.: {color}, {paint}, {list}).
    No HTML, use data-i18n="chave" (texto), data-i18n-html="chave"
    (aceita <br>) e data-i18n-aria="chave" (aria-label).
@@ -10,33 +16,29 @@
 (function (global) {
   'use strict';
 
+  // font = família do Google Fonts carregada só quando o idioma é escolhido
+  // (a Fredoka não tem caracteres chineses/japoneses).
   const LANGS = {
     pt: { label: 'Português', voice: 'pt-BR' },
     en: { label: 'English',   voice: 'en-US' },
     es: { label: 'Español',   voice: 'es-ES' },
+    de: { label: 'Deutsch',   voice: 'de-DE' },
+    fr: { label: 'Français',  voice: 'fr-FR' },
+    zh: { label: '中文',       voice: 'zh-CN', font: 'ZCOOL+KuaiLe' },
+    ja: { label: '日本語',     voice: 'ja-JP', font: 'M+PLUS+Rounded+1c:wght@500;700;800' },
   };
+  const ORDER = ['pt', 'en', 'es', 'de', 'fr', 'zh', 'ja'];
 
   const STRINGS = {
+    // ------------------------------------------------------------------ pt
     pt: {
-      aStore: 'Loja', lblStore: 'Loja', storeTitle: 'Loja', storeFree: 'Grátis', watch: 'Assistir',
-      watchHint: '+1 dica assistindo um anúncio', watchSkip: '+1 pulo assistindo um anúncio',
-      storeItems: 'Dicas e pulos', storeGems: 'Diamantes',
-      storeGemsNote: 'A compra de diamantes com dinheiro ainda não está disponível.',
-      sceneThemes: 'Cenário', brushThemes: 'Pincel',
-      brushes: { classic: 'Clássico', berry: 'Morango', ocean: 'Oceano', wood: 'Madeira', gold: 'Dourado', neon: 'Neon' },
-      cancel: 'Cancelar', buyFor: 'Comprar por {price}',
-      confirmTheme: 'Comprar o tema {name}?', confirmBrush: 'Comprar o pincel {name}?', confirmItem: 'Comprar {name}?',
-      itemHints: '{n} dicas', itemSkips: '{n} pulos', gemsPack: '{n} diamantes',
-      noGems: 'Diamantes insuficientes!', bought: 'Comprado!', gotReward: 'Você ganhou {what}!',
-      oneHint: '+1 dica', oneSkip: '+1 pulo', adLabel: 'Anúncio', adSim: 'Aqui vai aparecer um anúncio (simulação).',
-      adFail: 'Anúncio indisponível. Tente de novo.', soonPurchase: 'Compras com dinheiro: em breve!',      title: 'Mistura de Cores', loading: 'Carregando…', tapToPlay: 'Toque para jogar', sayStart: 'Vamos fazer {color}!',
+      title: 'Mistura de Cores', loading: 'Carregando…', tapToPlay: 'Toque para jogar', sayStart: 'Vamos fazer {color}!',
       challenge: 'DESAFIO', mixProgress: 'PROGRESSO DA MISTURA',
       aPause: 'Pausar e configurações', aRestart: 'Recomeçar a rodada', aSkip: 'Pular desafio',
-      aHelp: 'Ajuda', aTheme: 'Trocar tema', aNoAds: 'Remover anúncios', aHint: 'Dica',
+      aHelp: 'Ajuda', aTheme: 'Trocar tema', aNoAds: 'Remover anúncios', aHint: 'Dica', aStore: 'Loja',
       lblSettings: 'Configurações', lblRestart: 'Limpar', lblSkip: 'Pular Cor', lblHint: 'Dica',
-      lblTheme: 'Temas', lblNoAds: 'Retirar Ads',
+      lblTheme: 'Temas', lblNoAds: 'Retirar Ads', lblStore: 'Loja',
       hintRecipe: 'Dica: misture {recipe}', sayHint: 'Misture {recipe}!',
-      help7: 'Toque na lâmpada para ganhar uma dica.',
       paused: 'Pausado', resume: 'Continuar', settings: 'Configurações', language: 'Idioma',
       music: 'Música', voice: 'Voz', autoMix: 'Mistura automática', on: 'LIGADA', off: 'DESLIGADA',
       autoMixHelp: 'Desligada: mexa o pincel de qualquer jeito dentro do pote.<br>Ligada: basta encostar o pincel no pote.',
@@ -48,6 +50,7 @@
       help4: 'Mexa o pincel no pote até a barra encher.',
       help5: 'Errou? Toque em ↺ para limpar o pote.',
       help6: 'Toque nas setas amarelas para pular uma cor.',
+      help7: 'Toque na lâmpada para ganhar uma dica.',
       gotIt: 'Entendi!', close: 'Fechar',
       themeTitle: 'Escolha o tema',
       themes: { classic: 'Clássico', ocean: 'Oceano', forest: 'Floresta', candy: 'Doce', night: 'Noite' },
@@ -69,27 +72,28 @@
       cheers: ['Muito bem!', 'Que lindo!', 'Consegui!', 'Que legal!'],
       banners: ['Muito bem!', 'Incrível!', 'Perfeito!', 'Uau!'],
       sayEnd: 'Parabéns! Você fez todas as cores!',
+      storeTitle: 'Loja', storeFree: 'Grátis', watch: 'Assistir',
+      watchHint: '+1 dica assistindo um anúncio', watchSkip: '+1 pulo assistindo um anúncio',
+      storeItems: 'Dicas e pulos', storeGems: 'Diamantes',
+      storeGemsNote: 'A compra de diamantes com dinheiro ainda não está disponível.',
+      sceneThemes: 'Cenário', brushThemes: 'Pincel',
+      brushes: { classic: 'Clássico', berry: 'Morango', ocean: 'Oceano', wood: 'Madeira', gold: 'Dourado', neon: 'Neon' },
+      cancel: 'Cancelar', buyFor: 'Comprar por {price}',
+      confirmTheme: 'Comprar o tema {name}?', confirmBrush: 'Comprar o pincel {name}?', confirmItem: 'Comprar {name}?',
+      itemHints: '{n} dicas', itemSkips: '{n} pulos', gemsPack: '{n} diamantes',
+      noGems: 'Diamantes insuficientes!', bought: 'Comprado!', gotReward: 'Você ganhou {what}!',
+      oneHint: '+1 dica', oneSkip: '+1 pulo', adLabel: 'Anúncio', adSim: 'Aqui vai aparecer um anúncio (simulação).',
+      adFail: 'Anúncio indisponível. Tente de novo.', soonPurchase: 'Compras com dinheiro: em breve!',
     },
+    // ------------------------------------------------------------------ en
     en: {
-      aStore: 'Store', lblStore: 'Store', storeTitle: 'Store', storeFree: 'Free', watch: 'Watch',
-      watchHint: '+1 hint for watching an ad', watchSkip: '+1 skip for watching an ad',
-      storeItems: 'Hints and skips', storeGems: 'Diamonds',
-      storeGemsNote: 'Buying diamonds with real money is not available yet.',
-      sceneThemes: 'Scenery', brushThemes: 'Brush',
-      brushes: { classic: 'Classic', berry: 'Strawberry', ocean: 'Ocean', wood: 'Wood', gold: 'Golden', neon: 'Neon' },
-      cancel: 'Cancel', buyFor: 'Buy for {price}',
-      confirmTheme: 'Buy the {name} theme?', confirmBrush: 'Buy the {name} brush?', confirmItem: 'Buy {name}?',
-      itemHints: '{n} hints', itemSkips: '{n} skips', gemsPack: '{n} diamonds',
-      noGems: 'Not enough diamonds!', bought: 'Purchased!', gotReward: 'You got {what}!',
-      oneHint: '+1 hint', oneSkip: '+1 skip', adLabel: 'Ad', adSim: 'An ad will play here (simulation).',
-      adFail: 'Ad unavailable. Try again.', soonPurchase: 'Real-money purchases: coming soon!',      title: 'Color Mixing', loading: 'Loading…', tapToPlay: 'Tap to play', sayStart: 'Let\'s make {color}!',
+      title: 'Color Mixing', loading: 'Loading…', tapToPlay: 'Tap to play', sayStart: 'Let\'s make {color}!',
       challenge: 'CHALLENGE', mixProgress: 'MIXING PROGRESS',
       aPause: 'Pause and settings', aRestart: 'Restart round', aSkip: 'Skip challenge',
-      aHelp: 'Help', aTheme: 'Change theme', aNoAds: 'Remove ads', aHint: 'Hint',
+      aHelp: 'Help', aTheme: 'Change theme', aNoAds: 'Remove ads', aHint: 'Hint', aStore: 'Store',
       lblSettings: 'Settings', lblRestart: 'Clear', lblSkip: 'Skip Color', lblHint: 'Hint',
-      lblTheme: 'Themes', lblNoAds: 'Remove Ads',
+      lblTheme: 'Themes', lblNoAds: 'Remove Ads', lblStore: 'Store',
       hintRecipe: 'Hint: mix {recipe}', sayHint: 'Mix {recipe}!',
-      help7: 'Tap the light bulb to get a hint.',
       paused: 'Paused', resume: 'Resume', settings: 'Settings', language: 'Language',
       music: 'Music', voice: 'Voice', autoMix: 'Auto mix', on: 'ON', off: 'OFF',
       autoMixHelp: 'Off: move the brush any way you like inside the pot.<br>On: just touch the pot with the brush.',
@@ -101,6 +105,7 @@
       help4: 'Stir the brush in the pot until the bar is full.',
       help5: 'Made a mistake? Tap ↺ to clean the pot.',
       help6: 'Tap the yellow arrows to skip a color.',
+      help7: 'Tap the light bulb to get a hint.',
       gotIt: 'Got it!', close: 'Close',
       themeTitle: 'Pick a theme',
       themes: { classic: 'Classic', ocean: 'Ocean', forest: 'Forest', candy: 'Candy', night: 'Night' },
@@ -122,27 +127,28 @@
       cheers: ['Well done!', 'So pretty!', 'I did it!', 'How cool!'],
       banners: ['Well done!', 'Amazing!', 'Perfect!', 'Wow!'],
       sayEnd: 'Congratulations! You made all the colors!',
+      storeTitle: 'Store', storeFree: 'Free', watch: 'Watch',
+      watchHint: '+1 hint for watching an ad', watchSkip: '+1 skip for watching an ad',
+      storeItems: 'Hints and skips', storeGems: 'Diamonds',
+      storeGemsNote: 'Buying diamonds with real money is not available yet.',
+      sceneThemes: 'Scenery', brushThemes: 'Brush',
+      brushes: { classic: 'Classic', berry: 'Strawberry', ocean: 'Ocean', wood: 'Wood', gold: 'Golden', neon: 'Neon' },
+      cancel: 'Cancel', buyFor: 'Buy for {price}',
+      confirmTheme: 'Buy the {name} theme?', confirmBrush: 'Buy the {name} brush?', confirmItem: 'Buy {name}?',
+      itemHints: '{n} hints', itemSkips: '{n} skips', gemsPack: '{n} diamonds',
+      noGems: 'Not enough diamonds!', bought: 'Purchased!', gotReward: 'You got {what}!',
+      oneHint: '+1 hint', oneSkip: '+1 skip', adLabel: 'Ad', adSim: 'An ad will play here (simulation).',
+      adFail: 'Ad unavailable. Try again.', soonPurchase: 'Real-money purchases: coming soon!',
     },
+    // ------------------------------------------------------------------ es
     es: {
-      aStore: 'Tienda', lblStore: 'Tienda', storeTitle: 'Tienda', storeFree: 'Gratis', watch: 'Ver',
-      watchHint: '+1 pista por ver un anuncio', watchSkip: '+1 salto por ver un anuncio',
-      storeItems: 'Pistas y saltos', storeGems: 'Diamantes',
-      storeGemsNote: 'La compra de diamantes con dinero aún no está disponible.',
-      sceneThemes: 'Escenario', brushThemes: 'Pincel',
-      brushes: { classic: 'Clásico', berry: 'Fresa', ocean: 'Océano', wood: 'Madera', gold: 'Dorado', neon: 'Neón' },
-      cancel: 'Cancelar', buyFor: 'Comprar por {price}',
-      confirmTheme: '¿Comprar el tema {name}?', confirmBrush: '¿Comprar el pincel {name}?', confirmItem: '¿Comprar {name}?',
-      itemHints: '{n} pistas', itemSkips: '{n} saltos', gemsPack: '{n} diamantes',
-      noGems: '¡No tienes suficientes diamantes!', bought: '¡Comprado!', gotReward: '¡Ganaste {what}!',
-      oneHint: '+1 pista', oneSkip: '+1 salto', adLabel: 'Anuncio', adSim: 'Aquí aparecerá un anuncio (simulación).',
-      adFail: 'Anuncio no disponible. Inténtalo de nuevo.', soonPurchase: 'Compras con dinero: ¡próximamente!',      title: 'Mezcla de Colores', loading: 'Cargando…', tapToPlay: 'Toca para jugar', sayStart: '¡Vamos a hacer {color}!',
+      title: 'Mezcla de Colores', loading: 'Cargando…', tapToPlay: 'Toca para jugar', sayStart: '¡Vamos a hacer {color}!',
       challenge: 'RETO', mixProgress: 'PROGRESO DE LA MEZCLA',
       aPause: 'Pausa y ajustes', aRestart: 'Reiniciar la ronda', aSkip: 'Saltar reto',
-      aHelp: 'Ayuda', aTheme: 'Cambiar tema', aNoAds: 'Quitar anuncios', aHint: 'Pista',
+      aHelp: 'Ayuda', aTheme: 'Cambiar tema', aNoAds: 'Quitar anuncios', aHint: 'Pista', aStore: 'Tienda',
       lblSettings: 'Ajustes', lblRestart: 'Limpiar', lblSkip: 'Saltar Color', lblHint: 'Pista',
-      lblTheme: 'Temas', lblNoAds: 'Quitar Ads',
+      lblTheme: 'Temas', lblNoAds: 'Quitar Ads', lblStore: 'Tienda',
       hintRecipe: 'Pista: mezcla {recipe}', sayHint: '¡Mezcla {recipe}!',
-      help7: 'Toca la bombilla para recibir una pista.',
       paused: 'En pausa', resume: 'Continuar', settings: 'Ajustes', language: 'Idioma',
       music: 'Música', voice: 'Voz', autoMix: 'Mezcla automática', on: 'ACTIVADA', off: 'DESACTIVADA',
       autoMixHelp: 'Desactivada: mueve el pincel como quieras dentro del bote.<br>Activada: basta con tocar el bote con el pincel.',
@@ -154,6 +160,7 @@
       help4: 'Mueve el pincel en el bote hasta llenar la barra.',
       help5: '¿Te equivocaste? Toca ↺ para limpiar el bote.',
       help6: 'Toca las flechas amarillas para saltar un color.',
+      help7: 'Toca la bombilla para recibir una pista.',
       gotIt: '¡Entendido!', close: 'Cerrar',
       themeTitle: 'Elige el tema',
       themes: { classic: 'Clásico', ocean: 'Océano', forest: 'Bosque', candy: 'Dulce', night: 'Noche' },
@@ -175,31 +182,281 @@
       cheers: ['¡Muy bien!', '¡Qué bonito!', '¡Lo logré!', '¡Qué genial!'],
       banners: ['¡Muy bien!', '¡Increíble!', '¡Perfecto!', '¡Guau!'],
       sayEnd: '¡Felicidades! ¡Hiciste todos los colores!',
+      storeTitle: 'Tienda', storeFree: 'Gratis', watch: 'Ver',
+      watchHint: '+1 pista por ver un anuncio', watchSkip: '+1 salto por ver un anuncio',
+      storeItems: 'Pistas y saltos', storeGems: 'Diamantes',
+      storeGemsNote: 'La compra de diamantes con dinero aún no está disponible.',
+      sceneThemes: 'Escenario', brushThemes: 'Pincel',
+      brushes: { classic: 'Clásico', berry: 'Fresa', ocean: 'Océano', wood: 'Madera', gold: 'Dorado', neon: 'Neón' },
+      cancel: 'Cancelar', buyFor: 'Comprar por {price}',
+      confirmTheme: '¿Comprar el tema {name}?', confirmBrush: '¿Comprar el pincel {name}?', confirmItem: '¿Comprar {name}?',
+      itemHints: '{n} pistas', itemSkips: '{n} saltos', gemsPack: '{n} diamantes',
+      noGems: '¡No tienes suficientes diamantes!', bought: '¡Comprado!', gotReward: '¡Ganaste {what}!',
+      oneHint: '+1 pista', oneSkip: '+1 salto', adLabel: 'Anuncio', adSim: 'Aquí aparecerá un anuncio (simulación).',
+      adFail: 'Anuncio no disponible. Inténtalo de nuevo.', soonPurchase: 'Compras con dinero: ¡próximamente!',
+    },
+    // ------------------------------------------------------------------ de
+    // Substantivos em maiúscula: as tintas e as cores aparecem como "Rot", "Violett".
+    de: {
+      title: 'Farben mischen', loading: 'Lädt…', tapToPlay: 'Tippen zum Spielen', sayStart: 'Lass uns {color} machen!',
+      challenge: 'AUFGABE', mixProgress: 'MISCHFORTSCHRITT',
+      aPause: 'Pause und Einstellungen', aRestart: 'Runde neu starten', aSkip: 'Aufgabe überspringen',
+      aHelp: 'Hilfe', aTheme: 'Thema ändern', aNoAds: 'Werbung entfernen', aHint: 'Tipp', aStore: 'Shop',
+      lblSettings: 'Einstellungen', lblRestart: 'Leeren', lblSkip: 'Überspringen', lblHint: 'Tipp',
+      lblTheme: 'Themen', lblNoAds: 'Ohne Werbung', lblStore: 'Shop',
+      hintRecipe: 'Tipp: Misch {recipe}', sayHint: 'Misch {recipe}!',
+      paused: 'Pause', resume: 'Weiter', settings: 'Einstellungen', language: 'Sprache',
+      music: 'Musik', voice: 'Stimme', autoMix: 'Automatisch mischen', on: 'AN', off: 'AUS',
+      autoMixHelp: 'Aus: Bewege den Pinsel beliebig im Topf.<br>An: Berühre einfach den Topf mit dem Pinsel.',
+      congrats: 'Glückwunsch!', allColors: 'Du hast alle Farben gemacht!', playAgain: 'Nochmal spielen',
+      helpTitle: 'So wird gespielt',
+      help1: 'Tippe auf eine Farbe, um den Pinsel einzutauchen.',
+      help2: 'Bring den Pinsel zum Topf.',
+      help3: 'Nimm eine andere Farbe und gib sie in den Topf.',
+      help4: 'Rühre mit dem Pinsel im Topf, bis der Balken voll ist.',
+      help5: 'Falsch? Tippe auf ↺, um den Topf zu leeren.',
+      help6: 'Tippe auf die gelben Pfeile, um eine Farbe zu überspringen.',
+      help7: 'Tippe auf die Glühbirne für einen Tipp.',
+      gotIt: 'Verstanden!', close: 'Schließen',
+      themeTitle: 'Wähle ein Thema',
+      themes: { classic: 'Klassisch', ocean: 'Ozean', forest: 'Wald', candy: 'Süß', night: 'Nacht' },
+      adsTitle: 'Ohne Werbung', adsText: 'Entferne die Werbung und spiele ohne Unterbrechungen.', adsSoon: 'Bald verfügbar',
+      skipped: 'Aufgabe übersprungen!', noHints: 'Keine Tipps mehr!', noSkips: 'Kein Überspringen mehr!',
+      instCelebrate: 'Wow! Perfekte Farbe!', instCarry: 'Bring das {paint} zum Topf!',
+      instMixing: 'Die Farbe wird gemischt...', instTapPot: 'Tippe auf den Topf zum Mischen!',
+      instStir: 'Rühre mit dem Pinsel im Topf!', instAnother: 'Jetzt nimm eine andere Farbe!',
+      instStart: 'Nimm eine Farbe, bring sie zum Topf und rühre um',
+      instClean: 'Tippe auf ↺, um den Topf zu leeren', instMore: 'Gib mehr Farbe dazu und misch nochmal!',
+      lockWarn: 'Es wird gemischt! Nimm den Finger weg, um eine andere Farbe zu nehmen.',
+      youMade: 'Du hast {color} gemacht!',
+      newPaint: 'Neue Farbe auf der Palette: {list}! Aufgabe: {color}', newPaints: 'Neue Farben auf der Palette: {list}! Aufgabe: {color}',
+      sayNewPaint: 'Neue Farbe! {list}!', sayNewPaints: 'Neue Farben! {list}!', and: 'und',
+      newChallenge: 'Neue Aufgabe: {color}!', cleanPot: 'Blitzblanker Topf! Noch einmal.',
+      hintEmpty: 'Der Topf ist leer. Nimm eine Farbe!',
+      hintWrong: 'Hoppla! {paint} gehört nicht zu {color}. Tippe auf ↺, um den Topf zu leeren.',
+      hintMore: 'Fast! Gib mehr {paint} dazu und misch nochmal.',
+      cheers: ['Super gemacht!', 'Wie schön!', 'Geschafft!', 'Toll!'],
+      banners: ['Super!', 'Unglaublich!', 'Perfekt!', 'Wow!'],
+      sayEnd: 'Glückwunsch! Du hast alle Farben gemacht!',
+      storeTitle: 'Shop', storeFree: 'Gratis', watch: 'Ansehen',
+      watchHint: '+1 Tipp für ein Werbevideo', watchSkip: '+1 Überspringen für ein Werbevideo',
+      storeItems: 'Tipps und Überspringen', storeGems: 'Diamanten',
+      storeGemsNote: 'Diamanten mit echtem Geld kaufen ist noch nicht möglich.',
+      sceneThemes: 'Szene', brushThemes: 'Pinsel',
+      brushes: { classic: 'Klassisch', berry: 'Erdbeere', ocean: 'Ozean', wood: 'Holz', gold: 'Gold', neon: 'Neon' },
+      cancel: 'Abbrechen', buyFor: 'Kaufen für {price}',
+      confirmTheme: 'Thema {name} kaufen?', confirmBrush: 'Pinsel {name} kaufen?', confirmItem: '{name} kaufen?',
+      itemHints: '{n} Tipps', itemSkips: '{n}× Überspringen', gemsPack: '{n} Diamanten',
+      noGems: 'Nicht genug Diamanten!', bought: 'Gekauft!', gotReward: 'Du hast {what} bekommen!',
+      oneHint: '+1 Tipp', oneSkip: '+1 Überspringen', adLabel: 'Werbung', adSim: 'Hier läuft eine Werbung (Simulation).',
+      adFail: 'Werbung nicht verfügbar. Versuch es nochmal.', soonPurchase: 'Käufe mit echtem Geld: bald!',
+    },
+    // ------------------------------------------------------------------ fr
+    // Frases evitam "le/l'" antes do nome da cor (ficaria "le orange").
+    fr: {
+      title: 'Mélange de Couleurs', loading: 'Chargement…', tapToPlay: 'Touche pour jouer', sayStart: 'C’est parti : {color} !',
+      challenge: 'DÉFI', mixProgress: 'PROGRÈS DU MÉLANGE',
+      aPause: 'Pause et réglages', aRestart: 'Recommencer la manche', aSkip: 'Passer le défi',
+      aHelp: 'Aide', aTheme: 'Changer de thème', aNoAds: 'Retirer les pubs', aHint: 'Indice', aStore: 'Boutique',
+      lblSettings: 'Réglages', lblRestart: 'Vider', lblSkip: 'Passer', lblHint: 'Indice',
+      lblTheme: 'Thèmes', lblNoAds: 'Sans pub', lblStore: 'Boutique',
+      hintRecipe: 'Indice : mélange {recipe}', sayHint: 'Mélange {recipe} !',
+      paused: 'Pause', resume: 'Continuer', settings: 'Réglages', language: 'Langue',
+      music: 'Musique', voice: 'Voix', autoMix: 'Mélange automatique', on: 'OUI', off: 'NON',
+      autoMixHelp: 'Non : remue le pinceau comme tu veux dans le pot.<br>Oui : il suffit de toucher le pot avec le pinceau.',
+      congrats: 'Bravo !', allColors: 'Tu as fait toutes les couleurs !', playAgain: 'Rejouer',
+      helpTitle: 'Comment jouer',
+      help1: 'Touche une peinture pour tremper le pinceau.',
+      help2: 'Amène le pinceau jusqu’au pot.',
+      help3: 'Prends une autre couleur et mets-la dans le pot.',
+      help4: 'Remue le pinceau dans le pot jusqu’à remplir la barre.',
+      help5: 'Une erreur ? Touche ↺ pour vider le pot.',
+      help6: 'Touche les flèches jaunes pour passer une couleur.',
+      help7: 'Touche l’ampoule pour avoir un indice.',
+      gotIt: 'Compris !', close: 'Fermer',
+      themeTitle: 'Choisis un thème',
+      themes: { classic: 'Classique', ocean: 'Océan', forest: 'Forêt', candy: 'Bonbon', night: 'Nuit' },
+      adsTitle: 'Sans pub', adsText: 'Retire les pubs et joue sans interruption.', adsSoon: 'Bientôt',
+      skipped: 'Défi passé !', noHints: 'Plus d’indices !', noSkips: 'Plus de passes !',
+      instCelebrate: 'Waouh ! Couleur parfaite !', instCarry: 'Amène le {paint} au pot !',
+      instMixing: 'On mélange la peinture...', instTapPot: 'Touche le pot pour mélanger !',
+      instStir: 'Remue le pinceau dans le pot !', instAnother: 'Maintenant, prends une autre couleur !',
+      instStart: 'Prends une couleur, amène-la au pot et remue',
+      instClean: 'Touche ↺ pour vider le pot', instMore: 'Ajoute de la peinture et mélange encore !',
+      lockWarn: 'On mélange ! Lève le doigt pour prendre une autre couleur.',
+      youMade: 'Bravo, {color} !',
+      newPaint: 'Nouvelle couleur sur la palette : {list} ! Défi : {color}', newPaints: 'Nouvelles couleurs sur la palette : {list} ! Défi : {color}',
+      sayNewPaint: 'Nouvelle couleur ! {list} !', sayNewPaints: 'Nouvelles couleurs ! {list} !', and: 'et',
+      newChallenge: 'Nouveau défi : {color} !', cleanPot: 'Pot tout propre ! On recommence.',
+      hintEmpty: 'Le pot est vide. Prends une couleur !',
+      hintWrong: 'Oups ! Le {paint} ne va pas dans cette couleur. Touche ↺ pour vider le pot.',
+      hintMore: 'Presque ! Ajoute du {paint} et mélange encore.',
+      cheers: ['Bravo !', 'Trop joli !', 'J’ai réussi !', 'Génial !'],
+      banners: ['Bravo !', 'Incroyable !', 'Parfait !', 'Waouh !'],
+      sayEnd: 'Bravo ! Tu as fait toutes les couleurs !',
+      storeTitle: 'Boutique', storeFree: 'Gratuit', watch: 'Regarder',
+      watchHint: '+1 indice en regardant une pub', watchSkip: '+1 passe en regardant une pub',
+      storeItems: 'Indices et passes', storeGems: 'Diamants',
+      storeGemsNote: 'L’achat de diamants avec de l’argent n’est pas encore disponible.',
+      sceneThemes: 'Décor', brushThemes: 'Pinceau',
+      brushes: { classic: 'Classique', berry: 'Fraise', ocean: 'Océan', wood: 'Bois', gold: 'Doré', neon: 'Néon' },
+      cancel: 'Annuler', buyFor: 'Acheter pour {price}',
+      confirmTheme: 'Acheter le thème {name} ?', confirmBrush: 'Acheter le pinceau {name} ?', confirmItem: 'Acheter {name} ?',
+      itemHints: '{n} indices', itemSkips: '{n} passes', gemsPack: '{n} diamants',
+      noGems: 'Pas assez de diamants !', bought: 'Acheté !', gotReward: 'Tu as gagné {what} !',
+      oneHint: '+1 indice', oneSkip: '+1 passe', adLabel: 'Pub', adSim: 'Une pub s’affichera ici (simulation).',
+      adFail: 'Pub indisponible. Réessaie.', soonPurchase: 'Achats avec de l’argent : bientôt !',
+    },
+    // ------------------------------------------------------------------ zh (chinês simplificado)
+    zh: {
+      title: '混合颜色', loading: '加载中…', tapToPlay: '点击开始', sayStart: '我们来调{color}吧！',
+      challenge: '挑战', mixProgress: '混合进度',
+      aPause: '暂停和设置', aRestart: '重新开始本轮', aSkip: '跳过挑战',
+      aHelp: '帮助', aTheme: '更换主题', aNoAds: '去除广告', aHint: '提示', aStore: '商店',
+      lblSettings: '设置', lblRestart: '清空', lblSkip: '跳过', lblHint: '提示',
+      lblTheme: '主题', lblNoAds: '去广告', lblStore: '商店',
+      hintRecipe: '提示：混合 {recipe}', sayHint: '混合{recipe}！',
+      paused: '已暂停', resume: '继续', settings: '设置', language: '语言',
+      music: '音乐', voice: '语音', autoMix: '自动混合', on: '开', off: '关',
+      autoMixHelp: '关：在罐子里随意搅动画笔。<br>开：只要用画笔碰一下罐子。',
+      congrats: '恭喜！', allColors: '你调出了所有颜色！', playAgain: '再玩一次',
+      helpTitle: '玩法',
+      help1: '点一下颜料，蘸湿画笔。',
+      help2: '把画笔拿到罐子里。',
+      help3: '再蘸另一种颜色，放进罐子里。',
+      help4: '在罐子里搅动画笔，直到进度条填满。',
+      help5: '弄错了？点 ↺ 清空罐子。',
+      help6: '点黄色箭头跳过一种颜色。',
+      help7: '点灯泡获得提示。',
+      gotIt: '知道了！', close: '关闭',
+      themeTitle: '选择主题',
+      themes: { classic: '经典', ocean: '海洋', forest: '森林', candy: '糖果', night: '夜晚' },
+      adsTitle: '无广告', adsText: '去除广告，畅玩不打扰。', adsSoon: '即将推出',
+      skipped: '已跳过挑战！', noHints: '提示用完了！', noSkips: '跳过用完了！',
+      instCelebrate: '哇！颜色完美！', instCarry: '把{paint}拿到罐子里！',
+      instMixing: '正在混合颜料…', instTapPot: '点一下罐子来混合！',
+      instStir: '在罐子里搅动画笔来混合！', instAnother: '现在蘸另一种颜色！',
+      instStart: '蘸一种颜色，放进罐子里，再搅拌混合',
+      instClean: '点 ↺ 清空罐子', instMore: '再加点颜料，重新混合！',
+      lockWarn: '正在混合！抬起手指再去蘸别的颜色。',
+      youMade: '你调出了{color}！',
+      newPaint: '调色板上有新颜色：{list}！挑战：{color}', newPaints: '调色板上有新颜色：{list}！挑战：{color}',
+      sayNewPaint: '新颜色！{list}！', sayNewPaints: '新颜色！{list}！', and: '和',
+      newChallenge: '新挑战：{color}！', cleanPot: '罐子干净啦！再来一次。',
+      hintEmpty: '罐子是空的。蘸一种颜色吧！',
+      hintWrong: '哎呀！{color}里没有{paint}。点 ↺ 清空罐子。',
+      hintMore: '差一点！再加点{paint}，重新混合。',
+      cheers: ['真棒！', '好漂亮！', '我做到了！', '太酷了！'],
+      banners: ['真棒！', '太厉害了！', '完美！', '哇！'],
+      sayEnd: '恭喜！你调出了所有颜色！',
+      storeTitle: '商店', storeFree: '免费', watch: '观看',
+      watchHint: '看广告得 +1 提示', watchSkip: '看广告得 +1 跳过',
+      storeItems: '提示和跳过', storeGems: '钻石',
+      storeGemsNote: '暂时还不能用真钱购买钻石。',
+      sceneThemes: '场景', brushThemes: '画笔',
+      brushes: { classic: '经典', berry: '草莓', ocean: '海洋', wood: '木头', gold: '金色', neon: '霓虹' },
+      cancel: '取消', buyFor: '用 {price} 购买',
+      confirmTheme: '购买“{name}”主题？', confirmBrush: '购买“{name}”画笔？', confirmItem: '购买{name}？',
+      itemHints: '{n} 个提示', itemSkips: '{n} 次跳过', gemsPack: '{n} 颗钻石',
+      noGems: '钻石不够！', bought: '购买成功！', gotReward: '你获得了{what}！',
+      oneHint: '+1 提示', oneSkip: '+1 跳过', adLabel: '广告', adSim: '这里会播放广告（模拟）。',
+      adFail: '广告暂不可用，请再试一次。', soonPurchase: '真钱购买：即将推出！',
+    },
+    // ------------------------------------------------------------------ ja (japonês, em kana para crianças)
+    ja: {
+      title: 'いろまぜ', loading: 'よみこみちゅう…', tapToPlay: 'タップして はじめる', sayStart: '{color}を つくろう！',
+      challenge: 'おだい', mixProgress: 'まぜぐあい',
+      aPause: 'ていしと せってい', aRestart: 'やりなおす', aSkip: 'おだいを とばす',
+      aHelp: 'ヘルプ', aTheme: 'テーマを かえる', aNoAds: 'こうこくを けす', aHint: 'ヒント', aStore: 'ショップ',
+      lblSettings: 'せってい', lblRestart: 'からにする', lblSkip: 'スキップ', lblHint: 'ヒント',
+      lblTheme: 'テーマ', lblNoAds: 'こうこくなし', lblStore: 'ショップ',
+      hintRecipe: 'ヒント：{recipe} を まぜよう', sayHint: '{recipe}を まぜよう！',
+      paused: 'ていし', resume: 'つづける', settings: 'せってい', language: 'ことば',
+      music: 'おんがく', voice: 'こえ', autoMix: 'じどうで まぜる', on: 'オン', off: 'オフ',
+      autoMixHelp: 'オフ：つぼの なかで ふでを うごかそう。<br>オン：ふでで つぼに さわるだけ。',
+      congrats: 'おめでとう！', allColors: 'ぜんぶの いろを つくったね！', playAgain: 'もういちど',
+      helpTitle: 'あそびかた',
+      help1: 'えのぐに さわって ふでに つけよう。',
+      help2: 'ふでを つぼまで はこぼう。',
+      help3: 'べつの いろも つぼに いれよう。',
+      help4: 'バーが いっぱいに なるまで つぼの なかで まぜよう。',
+      help5: 'まちがえたら ↺ で つぼを からに しよう。',
+      help6: 'きいろい やじるしで いろを とばせるよ。',
+      help7: 'でんきゅうを タップすると ヒントが もらえるよ。',
+      gotIt: 'わかった！', close: 'とじる',
+      themeTitle: 'テーマを えらぼう',
+      themes: { classic: 'クラシック', ocean: 'うみ', forest: 'もり', candy: 'おかし', night: 'よる' },
+      adsTitle: 'こうこくなし', adsText: 'こうこくを けして じゃまされずに あそぼう。', adsSoon: 'もうすぐ',
+      skipped: 'おだいを とばしたよ！', noHints: 'ヒントが もう ないよ！', noSkips: 'スキップが もう ないよ！',
+      instCelebrate: 'すごい！ ぴったりの いろ！', instCarry: '{paint}を つぼに はこぼう！',
+      instMixing: 'まぜてるよ…', instTapPot: 'つぼを タップして まぜよう！',
+      instStir: 'つぼの なかで ふでを うごかして まぜよう！', instAnother: 'つぎは べつの いろを とろう！',
+      instStart: 'いろを とって、つぼに いれて、まぜよう',
+      instClean: '↺ で つぼを からに しよう', instMore: 'えのぐを たして もういちど まぜよう！',
+      lockWarn: 'まぜてるよ！ べつの いろを とるには ゆびを はなしてね。',
+      youMade: '{color}が できた！',
+      newPaint: 'あたらしい いろ：{list}！ おだい：{color}', newPaints: 'あたらしい いろ：{list}！ おだい：{color}',
+      sayNewPaint: 'あたらしい いろ！ {list}！', sayNewPaints: 'あたらしい いろ！ {list}！', and: 'と',
+      newChallenge: 'あたらしい おだい：{color}！', cleanPot: 'つぼが きれいに なった！ もういちど。',
+      hintEmpty: 'つぼが からっぽ。いろを とろう！',
+      hintWrong: 'あれれ？ {color}に {paint}は いらないよ。↺ で つぼを からに しよう。',
+      hintMore: 'おしい！ {paint}を もっと いれて まぜよう。',
+      cheers: ['よくできました！', 'きれい！', 'できた！', 'すごいね！'],
+      banners: ['よくできました！', 'すごい！', 'パーフェクト！', 'わあ！'],
+      sayEnd: 'おめでとう！ ぜんぶの いろを つくったね！',
+      storeTitle: 'ショップ', storeFree: 'むりょう', watch: 'みる',
+      watchHint: 'こうこくを みて ヒント +1', watchSkip: 'こうこくを みて スキップ +1',
+      storeItems: 'ヒントと スキップ', storeGems: 'ダイヤ',
+      storeGemsNote: 'おかねで ダイヤを かうのは まだ できません。',
+      sceneThemes: 'けしき', brushThemes: 'ふで',
+      brushes: { classic: 'クラシック', berry: 'いちご', ocean: 'うみ', wood: 'き', gold: 'きんいろ', neon: 'ネオン' },
+      cancel: 'やめる', buyFor: '{price} で かう',
+      confirmTheme: 'テーマ「{name}」を かう？', confirmBrush: 'ふで「{name}」を かう？', confirmItem: '{name}を かう？',
+      itemHints: 'ヒント {n}こ', itemSkips: 'スキップ {n}かい', gemsPack: 'ダイヤ {n}こ',
+      noGems: 'ダイヤが たりないよ！', bought: 'かったよ！', gotReward: '{what} を もらったよ！',
+      oneHint: 'ヒント +1', oneSkip: 'スキップ +1', adLabel: 'こうこく', adSim: 'ここに こうこくが でます（シミュレーション）。',
+      adFail: 'こうこくを みられません。もういちど ためしてね。', soonPurchase: 'おかねでの かいもの：もうすぐ！',
     },
   };
 
-  // Nomes das cores-alvo (id do desafio em colors.js -> [pt, en, es])
+  // Nomes das cores-alvo (id do desafio em colors.js), na ordem de ORDER:
+  //            pt            en           es            de            fr           zh       ja
   const COLORS = {
-    purple: ['ROXO', 'PURPLE', 'MORADO'],          orange: ['LARANJA', 'ORANGE', 'NARANJA'],
-    green: ['VERDE', 'GREEN', 'VERDE'],            brown: ['MARROM', 'BROWN', 'MARRÓN'],
-    lime: ['LIMA', 'LIME', 'LIMA'],   turquoise: ['TURQUESA', 'TURQUOISE', 'TURQUESA'],
-    magenta: ['MAGENTA', 'MAGENTA', 'MAGENTA'],    pink: ['ROSA', 'PINK', 'ROSA'],
-    lightBlue: ['CELESTE', 'CERULEAN', 'CELESTE'], lilac: ['LILÁS', 'LILAC', 'LILA'],
-    peach: ['PÊSSEGO', 'PEACH', 'MELOCOTÓN'],      cream: ['CREME', 'CREAM', 'CREMA'],
-    coral: ['CORAL', 'CORAL', 'CORAL'],            gray: ['CINZA', 'GRAY', 'GRIS'],
-    darkBlue: ['MARINHO', 'NAVY', 'MARINO'], darkGreen: ['MUSGO', 'MOSS', 'MUSGO'],
-    wine: ['VINHO', 'BURGUNDY', 'BURDEOS'],        lightGray: ['PRATA', 'SILVER', 'PLATA'],
-    indigo: ['ANIL', 'INDIGO', 'AÑIL'],            aqua: ['MENTA', 'MINT', 'MENTA'],
-    brick: ['TIJOLO', 'BRICK', 'LADRILLO'],        mustard: ['MOSTARDA', 'MUSTARD', 'MOSTAZA'],
-    plum: ['AMEIXA', 'PLUM', 'CIRUELA'],           denim: ['ARDÓSIA', 'SLATE', 'PIZARRA'],
-    beige: ['BEGE', 'BEIGE', 'BEIGE'],
+    purple:    ['ROXO',       'PURPLE',    'MORADO',     'VIOLETT',    'VIOLET',    '紫色',   'むらさき'],
+    orange:    ['LARANJA',    'ORANGE',    'NARANJA',    'ORANGE',     'ORANGE',    '橙色',   'オレンジ'],
+    green:     ['VERDE',      'GREEN',     'VERDE',      'GRÜN',       'VERT',      '绿色',   'みどり'],
+    brown:     ['MARROM',     'BROWN',     'MARRÓN',     'BRAUN',      'MARRON',    '棕色',   'ちゃいろ'],
+    lime:      ['LIMA',       'LIME',      'LIMA',       'LIMETTE',    'ANIS',      '青柠色', 'ライム'],
+    turquoise: ['TURQUESA',   'TURQUOISE', 'TURQUESA',   'TÜRKIS',     'TURQUOISE', '青绿色', 'ターコイズ'],
+    magenta:   ['MAGENTA',    'MAGENTA',   'MAGENTA',    'MAGENTA',    'MAGENTA',   '品红色', 'マゼンタ'],
+    pink:      ['ROSA',       'PINK',      'ROSA',       'ROSA',       'ROSE',      '粉色',   'ピンク'],
+    lightBlue: ['CELESTE',    'CERULEAN',  'CELESTE',    'HIMMELBLAU', 'AZUR',      '天蓝色', 'そらいろ'],
+    lilac:     ['LILÁS',      'LILAC',     'LILA',       'FLIEDER',    'LILAS',     '淡紫色', 'ふじいろ'],
+    peach:     ['PÊSSEGO',    'PEACH',     'MELOCOTÓN',  'PFIRSICH',   'PÊCHE',     '桃色',   'ももいろ'],
+    cream:     ['CREME',      'CREAM',     'CREMA',      'CREME',      'CRÈME',     '奶油色', 'クリーム'],
+    coral:     ['CORAL',      'CORAL',     'CORAL',      'KORALLE',    'CORAIL',    '珊瑚色', 'コーラル'],
+    gray:      ['CINZA',      'GRAY',      'GRIS',       'GRAU',       'GRIS',      '灰色',   'はいいろ'],
+    darkBlue:  ['MARINHO',    'NAVY',      'MARINO',     'MARINEBLAU', 'MARINE',    '海军蓝', 'こんいろ'],
+    darkGreen: ['MUSGO',      'MOSS',      'MUSGO',      'MOOS',       'MOUSSE',    '苔绿色', 'こけいろ'],
+    wine:      ['VINHO',      'BURGUNDY',  'BURDEOS',    'BORDEAUX',   'BORDEAUX',  '酒红色', 'えんじいろ'],
+    lightGray: ['PRATA',      'SILVER',    'PLATA',      'SILBER',     'ARGENT',    '银色',   'ぎんいろ'],
+    indigo:    ['ANIL',       'INDIGO',    'AÑIL',       'INDIGO',     'INDIGO',    '靛蓝色', 'あいいろ'],
+    aqua:      ['MENTA',      'MINT',      'MENTA',      'MINZE',      'MENTHE',    '薄荷绿', 'ミント'],
+    brick:     ['TIJOLO',     'BRICK',     'LADRILLO',   'ZIEGELROT',  'BRIQUE',    '砖红色', 'れんがいろ'],
+    mustard:   ['MOSTARDA',   'MUSTARD',   'MOSTAZA',    'SENF',       'MOUTARDE',  '芥末黄', 'からしいろ'],
+    plum:      ['AMEIXA',     'PLUM',      'CIRUELA',    'PFLAUME',    'PRUNE',     '梅子色', 'プラム'],
+    denim:     ['ARDÓSIA',    'SLATE',     'PIZARRA',    'SCHIEFER',   'ARDOISE',   '石板灰', 'スレート'],
+    beige:     ['BEGE',       'BEIGE',     'BEIGE',      'BEIGE',      'BEIGE',     '米色',   'ベージュ'],
   };
-  // Tintas da paleta (minúsculas, usadas no meio das frases)
+  // Tintas da paleta (como aparecem no meio das frases), na ordem de ORDER
   const PAINTS = {
-    r: ['vermelho', 'red', 'rojo'], y: ['amarelo', 'yellow', 'amarillo'], b: ['azul', 'blue', 'azul'],
-    w: ['branco', 'white', 'blanco'], k: ['preto', 'black', 'negro'], g: ['verde', 'green', 'verde'],
+    r: ['vermelho', 'red',    'rojo',     'Rot',     'rouge', '红色', 'あか'],
+    y: ['amarelo',  'yellow', 'amarillo', 'Gelb',    'jaune', '黄色', 'きいろ'],
+    b: ['azul',     'blue',   'azul',     'Blau',    'bleu',  '蓝色', 'あお'],
+    w: ['branco',   'white',  'blanco',   'Weiß',    'blanc', '白色', 'しろ'],
+    k: ['preto',    'black',  'negro',    'Schwarz', 'noir',  '黑色', 'くろ'],
+    g: ['verde',    'green',  'verde',    'Grün',    'vert',  '绿色', 'みどり'],
   };
-  const IDX = { pt: 0, en: 1, es: 2 };
 
   function detect() {
     try {
@@ -210,22 +467,44 @@
     return STRINGS[nav] ? nav : 'pt';
   }
 
+  /** Carrega (uma vez) a fonte extra do idioma, se ele tiver uma. */
+  const loadedFonts = new Set();
+  function ensureFont(lang) {
+    const f = LANGS[lang].font;
+    if (!f || loadedFonts.has(f)) return;
+    loadedFonts.add(f);
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${f}&display=swap`;
+    document.head.appendChild(link);
+  }
+
   const I18N = {
     LANGS,
     lang: detect(),
     listeners: [],
-    /** Texto traduzido; {nome} é trocado pelos valores de "params". */
+    idx() { return ORDER.indexOf(this.lang); },
+    /** Texto traduzido; {nome} é trocado pelos valores de "params". Falta no idioma -> inglês. */
     t(key, params) {
-      const s = STRINGS[this.lang][key] !== undefined ? STRINGS[this.lang][key] : STRINGS.pt[key];
+      const d = STRINGS[this.lang];
+      const s = d[key] !== undefined ? d[key] : (STRINGS.en[key] !== undefined ? STRINGS.en[key] : STRINGS.pt[key]);
       if (typeof s !== 'string' || !params) return s;
       return s.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? params[k] : ''));
     },
-    color(id) { const c = COLORS[id]; return c ? (c[IDX[this.lang]] || c[0]) : id; },
-    paint(key) { const p = PAINTS[key]; return p ? (p[IDX[this.lang]] || p[0]) : key; },
-    lower(s) { return s.toLocaleLowerCase(LANGS[this.lang].voice); },
-    /** "a, b e c" no idioma atual. */
+    color(id) { const c = COLORS[id]; return c ? (c[this.idx()] || c[1]) : id; },
+    paint(key) { const p = PAINTS[key]; return p ? (p[this.idx()] || p[1]) : key; },
+    /** Nome da cor no meio da frase: minúsculas; em alemão, substantivo com inicial maiúscula. */
+    lower(s) {
+      const l = s.toLocaleLowerCase(this.voiceLang());
+      return this.lang === 'de' ? l.charAt(0).toLocaleUpperCase('de') + l.slice(1) : l;
+    },
+    /** Largura "visual" do texto: chinês/japonês ocupam ~2 letras latinas. */
+    width(s) { let n = 0; for (const ch of s) n += ch.codePointAt(0) >= 0x2e80 ? 2 : 1; return n; },
+    /** "a, b e c" no formato do idioma atual (Intl.ListFormat; senão vírgulas + "e"). */
     list(items) {
-      return items.length > 1 ? `${items.slice(0, -1).join(', ')} ${this.t('and')} ${items[items.length - 1]}` : items[0];
+      if (items.length < 2) return items[0] || '';
+      try { return new Intl.ListFormat(this.voiceLang(), { style: 'long', type: 'conjunction' }).format(items); }
+      catch (_) { return `${items.slice(0, -1).join(', ')} ${this.t('and')} ${items[items.length - 1]}`; }
     },
     voiceLang() { return LANGS[this.lang].voice; },
     set(lang) {
@@ -238,6 +517,7 @@
     onChange(fn) { this.listeners.push(fn); },
     /** Traduz os elementos estáticos do HTML. */
     apply(root = document) {
+      ensureFont(this.lang);
       document.documentElement.lang = this.voiceLang();
       document.title = this.t('title');
       root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = this.t(el.dataset.i18n); });
